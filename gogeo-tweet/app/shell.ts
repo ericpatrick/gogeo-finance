@@ -37,7 +37,7 @@ module gogeo {
     }
 
     static getDateRangeUrl(): string {
-      return "http://maps.demos.gogeo.io/1.0/tools/daterange";
+      return Configuration.makeUrl("aggregations/" + Configuration.getDatabaseName() + "/" + Configuration.getCollectionName() + "/stats?mapkey=" + Configuration.getMapKey() + "&field=date");
     }
 
     static getPlaceUrl(place: string): string {
@@ -50,6 +50,10 @@ module gogeo {
 
     static getShortenUrl(): string {
       return "http://maps.demos.gogeo.io/1.0/tools/short";
+    }
+
+    static getDatabaseName(): string {
+      return "dbtest";
     }
 
     static getMapKey(): string {
@@ -77,6 +81,26 @@ module gogeo {
       return 0;
     }
 
+    static getPieChartField(): string {
+      // TODO: Export this to development/deployment config file
+      return "amount"; 
+    }
+
+    static getPieChartGroupBy(): string {
+      // TODO: Export this to development/deployment config file
+      return "sum,place_type"; 
+    }
+
+    static getSummaryField(): string {
+      // TODO: Export this to development/deployment config file
+      return "amount"; 
+    }
+
+    static getSummaryGroupBy(): string {
+      // TODO: Export this to development/deployment config file
+      return "sum,type"; 
+    }
+
     static getPlaceFields(): Array<string> {
       // TODO: Export this to development/deployment config file
       return [ "city", "state" ];
@@ -95,12 +119,15 @@ module gogeo {
         "card_brand",
         "cnae",
         "cnae_label",
-        "date"
+        "date",
+        "city",
+        "state",
+        "cnpj"
       ];
     }
   }
 
-  var mod = angular.module("gogeo", ["ngRoute", "ngCookies", "angularytics", "linkify", "ngGeolocation", "n3-line-chart"])
+  var mod = angular.module("gogeo", ["ngRoute", "ngCookies", "angularytics", "linkify", "ngGeolocation", "nvd3", 'angular-capitalize-filter'])
     .config([
       "$routeProvider",
       "AngularyticsProvider",

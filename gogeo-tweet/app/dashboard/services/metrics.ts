@@ -149,7 +149,7 @@ module gogeo {
       this.publishMetric("mapType", "mapType", type);
     }
 
-    publishPopupMetric(tweet: Array<ITweet>) {
+    publishPopupMetric(tweet: Array<ITransaction>) {
       if (!tweet || tweet.length == 0) {
         return;
       }

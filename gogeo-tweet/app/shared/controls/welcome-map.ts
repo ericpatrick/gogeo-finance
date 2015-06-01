@@ -15,7 +15,7 @@ module gogeo {
                     // template: "<div></div>",
                     link: (scope, element, attrs) => {
                         var rawElement = element[0];
-                        var url = "http://api.gogeo.io/1.0/map/db1/tweets/{z}/{x}/{y}/tile.png?mapkey=123&stylename=gogeo_many_points";
+                        var url = "http://api.gogeo.io/1.0/map/" + Configuration.getDatabaseName() + "/tweets/{z}/{x}/{y}/tile.png?mapkey=123&stylename=gogeo_many_points";
                         var initialPos = L.latLng(43.717232, -92.353034);
                         var map = L.map("welcome-map").setView(initialPos, 5);
 

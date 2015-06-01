@@ -24,7 +24,7 @@ module gogeo {
         ];
 
         map: L.Map;
-        tweetResult: ITweet;
+        tweetResult: ITransaction;
         popup: L.Popup;
         query: any = { query: { filtered: { filter: { } } } };
         selected: string = "inactive";
@@ -345,7 +345,7 @@ module gogeo {
         }
 
         private configureUrl(): string {
-            var database = "db1";
+            var database = Configuration.getDatabaseName();
             var collection = Configuration.getCollectionName();
             var buffer = 8;
             var stylename = "gogeo_many_points";
@@ -572,12 +572,12 @@ module gogeo {
                 }
 
                 var thematicQuery = new ThematicQuery(queries, this.query);
-                this.service.getTweet(levent.latlng, zoom, thematicQuery);
+                this.service.getTransaction(levent.latlng, zoom, thematicQuery);
                 this.levent = levent;
             }
         }
 
-        private handlePopupResult(result: Array<ITweet>) {
+        private handlePopupResult(result: Array<ITransaction>) {
             if (!result || result.length == 0) {
                 return;
             }
@@ -592,7 +592,7 @@ module gogeo {
                 var options = {
                     closeButton: false,
                     className: "marker-popup",
-                    offset: new L.Point(-200, -272)
+                    offset: new L.Point(-203, -368)
                 };
                 this.popup = L.popup(options);
                 this.popup.setContent($("#tweet-popup")[0]);

@@ -35,45 +35,69 @@
         <span aria-hidden="true">&times;</span>
       </button>
 
-      <img class="mc-weet-thumb" err-src="https://s3.amazonaws.com/deploy.gogeo/cdn/twitter-bird-logo.png" ng-src="{{ map.formatPictureUrl(map.tweetResult['user.profile_image_url']) }}" alt="" width="94" height="94" />
+      <!-- <img class="mc-weet-thumb" err-src="https://s3.amazonaws.com/deploy.gogeo/cdn/twitter-bird-logo.png" ng-src="{{ map.formatPictureUrl(map.tweetResult['user.profile_image_url']) }}" alt="" width="94" height="94" /> -->
 
       <div class="mc-tweet-user">
         <div class="row">
-          <div class="col-md-12">
+          <div class="col-md-7">
+            <p>CLIENTE</p>
             <p>{{ map.tweetResult['name'] }}</p>
+          </div>
+          <div class="col-md-5">
+            <p>VALOR</p>
+            <p><strong>{{ map.tweetResult['amount'] | currency: "R$" }}</strong></p>
           </div>
         </div>
         <div style="padding-top: 15px; padding-right: 5px; font-size: 12px;">
           <div class="row">
-            <div class="col-md-12">
-              <span>
-                <strong>
-                  {{ map.tweetResult["place"] }}
-                </strong>
-              </span>
+            <div class="col-md-7">
+              <p>TRANSAÇÃO</p>
+              <p>{{ map.tweetResult['card_brand'] }} / {{ map.tweetResult['type'] | capitalize:'first' }}</p>
             </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <span>
-                <strong>
-                  {{ map.formatDate(map.tweetResult["date"]) }}
-                </strong>
-              </span>
+            <div class="col-md-5">
+              <p>STATUS</p>
+              <p>Inexistente</p>
             </div>
           </div>
         </div>
       </div>
 
       <div class="mc-tweet-msg">
-        <label>
-          {{ map.tweetResult["place_type"] }}
-        </label>
-        <span>
-          {{ map.tweetResult["amount"] | currency }}
-        </span>
-        <!-- <p ng-bind-html="map.formatTweetText(map.tweetResult['text'])">
-        </p> -->
+        <div class="row">
+          <div class="col-md-7">
+            <p>{{ map.tweetResult['cnae'] }}</p>
+            <p>{{ map.tweetResult['company_name'] | lowercase | capitalize:'all' }}</p>
+          </div>
+          <div class="col-md-5">
+            <p>EQUIPAMENTO</p>
+            <p>Inexistente</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <p>{{ map.tweetResult['cnpj'] }}</p>
+          </div>
+        </div>
+        <div style="padding-top: 15px; padding-right: 5px; font-size: 12px;">
+          <div class="row">
+            <div class="col-md-7">
+              <p>LOCALIZAÇÃO</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-7">
+              <p>Inexistente</p>
+            </div>
+            <div class="col-md-5">
+              <p>Inexistente</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-7">
+              <p>{{ map.tweetResult['city'] }}, {{ map.tweetResult['state'] }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

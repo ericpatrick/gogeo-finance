@@ -26,6 +26,11 @@ module gogeo {
     buckets: Array<IBucket>;
   }
 
+  export interface IStatsSumAgg {
+    key: string;
+    sum: number;
+  }
+
   export interface ITweet {
     created_at: string;
     id: string;
@@ -47,6 +52,27 @@ module gogeo {
     "place.country": string;
     "place.full_name": string;
     "place.bounding_box.coordinates": string;
+  }
+
+  export interface ITransaction {
+    name: string,
+    username: string,
+    email: string,
+    amount: number,
+    date: string,
+    type: string,
+    place_type: string,
+    cnpj: number,
+    company_name: string,
+    fantasy_name: string,
+    city: string,
+    state: string,
+    geo_code: number,
+    cnae: number,
+    cnae_label: string,
+    installment: number,
+    installments: number,
+    card_brand: string
   }
 
   export interface IDateRange {

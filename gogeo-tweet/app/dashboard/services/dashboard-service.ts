@@ -70,7 +70,7 @@ module gogeo {
     _hashtagResultObservable = new Rx.BehaviorSubject<IHashtagResult>(null);
     _dateRangeObservable = new Rx.BehaviorSubject<IDateRange>(null);
     _lastQueryObservable = new Rx.BehaviorSubject<any>(null);
-    _tweetObservable = new Rx.BehaviorSubject<Array<ITweet>>(null);
+    _tweetObservable = new Rx.BehaviorSubject<Array<ITransaction>>(null);
     _dateLimitObservable = new Rx.BehaviorSubject<any>(null);
     _placeBoundObservable = new Rx.BehaviorSubject<L.LatLngBounds>(null);
     _loadParamsObservable = new Rx.BehaviorSubject<any>(null);
@@ -130,7 +130,7 @@ module gogeo {
       return this._placeObservable;
     }
 
-    get tweetObservable():Rx.BehaviorSubject<Array<ITweet>> {
+    get tweetObservable():Rx.BehaviorSubject<Array<ITransaction>> {
       return this._tweetObservable;
     }
 
@@ -342,9 +342,8 @@ module gogeo {
       this._lastMapBase = mapBase;
     }
 
-
-    getTweet(latlng: L.LatLng, zoom: number, thematicQuery?: ThematicQuery) {
-      return this.getTweetData(latlng, zoom, thematicQuery);
+    getTransaction(latlng: L.LatLng, zoom: number, thematicQuery?: ThematicQuery) {
+      return this.getTransactionData(latlng, zoom, thematicQuery);
     }
 
     getDateRange() {
@@ -356,10 +355,10 @@ module gogeo {
     }
 
     getDateHistogramAggregation() {
-      var url = Configuration.makeUrl("aggregations/db1/" + Configuration.getCollectionName() + "/date_histogram");
+      var url = Configuration.makeUrl("aggregations/" + Configuration.getDatabaseName() + "/" + Configuration.getCollectionName() + "/date_histogram");
       var q = this.composeQuery().requestData.q;
 
-      console.log("->", JSON.stringify(q, null, 2));
+      // console.log("->", JSON.stringify(q, null, 2));
 
       var options = {
         params: {
@@ -374,8 +373,40 @@ module gogeo {
       return this.$http.get<Array<IDateHistogram>>(url, options);
     }
 
-    private getTweetData(latlng: L.LatLng, zoom: number, thematicQuery?: ThematicQuery) {
-      var url = Configuration.makeUrl("geosearch/db1/" + Configuration.getCollectionName() + "?mapkey=123");
+    getStatsAggregationSummary() {
+      var field = Configuration.getSummaryField();
+      var groupBy = Configuration.getSummaryGroupBy();
+
+      return this.getStatsAggregation(field, groupBy)
+    }
+
+    getStatsAggregationPieChart() {
+      var field = Configuration.getPieChartField();
+      var groupBy = Configuration.getPieChartGroupBy();
+
+      return this.getStatsAggregation(field, groupBy)
+    }
+
+    getStatsAggregation(field: string, groupBy: string) {
+      var url = Configuration.makeUrl("aggregations/" + Configuration.getDatabaseName() + "/" + Configuration.getCollectionName() + "/stats");
+      var q = this.composeQuery().requestData.q;
+
+      // console.log("->", JSON.stringify(q, null, 2));
+
+      var options = {
+        params: {
+          mapkey: Configuration.getMapKey(),
+          field: field,
+          group_by: groupBy,
+          q: JSON.stringify(q)
+        }
+      };
+
+      return this.$http.get<Array<IStatsSumAgg>>(url, options);
+    }
+
+    private getTransactionData(latlng: L.LatLng, zoom: number, thematicQuery?: ThematicQuery) {
+      var url = Configuration.makeUrl("geosearch/" + Configuration.getDatabaseName() + "/" + Configuration.getCollectionName() + "?mapkey=123");
       var pixelDist = 2575 * Math.cos((latlng.lat * Math.PI / 180)) / Math.pow(2, (zoom + 8));
       var query = this.composeQuery().requestData.q;
 
@@ -391,7 +422,7 @@ module gogeo {
       };
 
       var geosearch = new GogeoGeosearch(this.$http, geom, pixelDist, "degree", Configuration.tweetFields(), 1, query);
-      geosearch.execute((result: Array<ITweet>) => {
+      geosearch.execute((result: Array<ITransaction>) => {
         this._tweetObservable.onNext(result);
       });
     }
@@ -423,10 +454,11 @@ module gogeo {
     composeQuery(): DashboardQuery {
       var query = new DashboardQuery(this.$http, this._lastGeomSpace);
 
-      if (this._lastHashtagFilter) {
-        query.filterByHashtag(this._lastHashtagFilter);
-      }
+      // if (this._lastHashtagFilter) {
+      //   query.filterByHashtag(this._lastHashtagFilter);
+      // }
 
+      // @robertogyn19, goiânia, #gogeoio
       if (this._lastSomethingTerms.length > 0) {
         query.filterBySearchTerms(this._lastSomethingTerms);
       }

@@ -117,7 +117,7 @@ module gogeo {
     }
 
     execute(resultHandler:(IHashtagResult) => void) {
-      var url = Configuration.makeUrl("geoagg/db1/" + Configuration.getCollectionName() + "?mapkey=123");
+      var url = Configuration.makeUrl("geoagg/" + Configuration.getDatabaseName() + "/" + Configuration.getCollectionName() + "?mapkey=123");
 
       // console.log("this.requestData", JSON.stringify(this.requestData, null, 2));
 

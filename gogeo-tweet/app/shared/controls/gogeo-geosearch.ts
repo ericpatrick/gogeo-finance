@@ -27,8 +27,8 @@ module gogeo {
       this.q = angular.toJson(query);
     }
 
-    execute(resultHandler: (ITweet) => void) {
-      var url = Configuration.makeUrl("geosearch/db1/" + Configuration.getCollectionName() + "?mapkey=123");
+    execute(resultHandler: (ITransaction) => void) {
+      var url = Configuration.makeUrl("geosearch/" + Configuration.getDatabaseName() + "/" + Configuration.getCollectionName() + "?mapkey=123");
 
       this.requestData = {
         geom: this.geom,
@@ -40,7 +40,7 @@ module gogeo {
       }
 
       return this.$http
-        .post<Array<ITweet>>(url, this.requestData)
+        .post<Array<ITransaction>>(url, this.requestData)
         .success(resultHandler);
     }
 
