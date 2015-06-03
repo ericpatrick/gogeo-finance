@@ -13,31 +13,59 @@ module gogeo {
     buckets: any = [];
     options: any = {
       chart: {
-        type: 'lineChart',
-        height: 380,
-        width: 430,
+        type: 'multiChart',
+        height: 330,
+        width: 400,
+        color: [
+          "#1f77b4",
+          "#2ca02c"
+        ],
         margin : {
           top: 20,
           right: 20,
           bottom: 40,
-          left: 55
+          left: 100
         },
         showValues: true,
         transitionDuration: 500,
         xAxis: {
-          axisLabel: "Time",
+          axisLabel: "Tempo",
           tickFormat: function(d) {
             return moment(new Date(d)).format("DD/MM/YYYY");
           },
           showMaxMin: true,
-          rotateLabels: 50
+          rotateLabels: 50,
+          axisLabelDistance: 10
         },
-        yAxis: {
-          axisLabel: "Count (k)",
+        yAxis1: {
+          axisLabel: "Quantidade (k)",
           tickFormat: function(d) {
             return (d / 1000).toFixed(2);
           },
           axisLabelDistance: 30
+        },
+        yAxis2: {
+          axisLabel: "Valor (k)",
+          tickFormat: function(d) {
+            return (d / 1000).toFixed(2);
+          },
+          axisLabelDistance: 30,
+          width: 90,
+          margin: {
+            right: 70
+          }
+        }
+      },
+      title: {
+        enable: true,
+        text: "TRANSAÇÕES/PERÍODO",
+        class: "h4",
+        css: {
+          // width: "500px",
+          // padding: "500px",
+          textAlign: "left",
+          position: "relative",
+          top: "20px"
         }
       }
     };
@@ -54,8 +82,15 @@ module gogeo {
 
       this.buckets = [
         {
-          key: "Quantity",
-          // bar: true,
+          key: "Quantidade",
+          type: "line",
+          yAxis: 1,
+          values: []
+        },
+        {
+          key: "R$",
+          type: "line",
+          yAxis: 2,
           values: []
         }
       ];
@@ -63,16 +98,23 @@ module gogeo {
 
     getDataChart() {
       this.service.getDateHistogramAggregation().success((result: Array<IDateHistogram>) => {
-        var values = [];
-        this.buckets["values"] = [];
+        var quantityValues = [];
+        var amountValues = [];
+        this.buckets[0]["values"] = [];
+        this.buckets[1]["values"] = [];
         result.forEach((item) => {
-          values.push({
+          quantityValues.push({
             x: item['timestamp'] + (3 * 3600 * 1000), // Add time offset +3 hours
             y: item['count']
           });
+          amountValues.push({
+            x: item['timestamp'] + (3 * 3600 * 1000), // Add time offset +3 hours
+            y: item['sum']
+          });
         });
 
-        this.buckets[0]["values"] = values;
+        this.buckets[0]["values"] = quantityValues;
+        this.buckets[1]["values"] = amountValues;
       });
     }
   }

@@ -2374,7 +2374,7 @@ td.visible-print,th.visible-print{display:table-cell!important}
 .nvtooltip table td.legend-color-guide div{width:8px;height:8px;vertical-align:middle}
 .nvtooltip .footer{padding:3px;text-align:center}
 .nvtooltip-pending-removal{position:absolute;pointer-events:none}
-svg{-khtml-user-select:none;user-select:none;display:block;width:100%;height:100%}
+svg{-khtml-user-select:none;user-select:none;display:block}
 .icon-button,svg{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
 svg text{font:400 12px Arial}
 svg .title{font:700 14px Arial}
@@ -2606,3 +2606,6 @@ a{color:#168fae}
 .thematic-legend ul li.instagram.disabled{background-color:#FFB61E;color:#EEE}
 .thematic-legend ul li.others{background-color:#fff;color:#0036B3}
 .thematic-legend ul li.others.disabled{background-color:#0036B3;color:#EEE}
+.container-pie-chart{border-top:1px dashed #A1A1A1;margin-top:10px}
+.tick line{display:none}
+date-histogram-chart nvd3 svg{height:370px!important;width:500px!important;position:relative;left:-40px}

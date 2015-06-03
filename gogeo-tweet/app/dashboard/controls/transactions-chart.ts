@@ -42,12 +42,12 @@ module gogeo {
       this.configureChartOptions();
 
       this.service.getStatsAggregationSummary().success((result:Array<IStatsSumAgg>) => {
-        // var colors = [ "#053061", "#2166AC", "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
+        // var colors = [ "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
         result.forEach((item) => {
           // console.log("********", item);
           this.buckets.push(
             {
-              x: item['key'],
+              x: item['key'].toUpperCase(),
               y: item['sum']
             }
           );
@@ -73,17 +73,25 @@ module gogeo {
           transitionDuration: 500,
           labelThreshold: 0.01,
           showLegend: false,
+          color: function (d, i) {
+            var colors = [ "#FF7F0E", "#4393C3" ];
+            return colors[i % colors.length];
+          }
+          // tooltipContent: function (key, y, e, graph) {
+          //   return '<h4 style="background-color: #F0F0F0; padding: 5px 0px 5px 10px; margin-top: 0px"><strong>' + key + '</strong></h4>' +
+          //          '<div style="width: 140px"><center>R$' +  y + '</center></div>'
+          // }
         },
         title: {
           enable: true,
           text: "SHARE DE TIPOS DE PAGAMENTOS",
-          class: "h3",
+          class: "h4",
           css: {
             // width: "500px",
             // padding: "500px",
-            textAlign: "center",
+            textAlign: "left",
             position: "relative",
-            top: "30px"
+            top: "20px"
           }
         }
       };

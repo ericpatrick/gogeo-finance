@@ -76,6 +76,11 @@ module gogeo {
       return "place_type"; 
     }
 
+    static getAggSummary(): string {
+      // TODO: Export this to development/deployment config file
+      return "amount"; 
+    }
+
     static getAggSize(): number {
       // TODO: Export this to development/deployment config file
       return 0;

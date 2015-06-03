@@ -271,7 +271,7 @@ module gogeo {
                     rectangle: {
                       showArea: true,
                       shapeOptions: {
-                        color: "yellow"
+                        color: "blue"
                       }
                     }
                 },

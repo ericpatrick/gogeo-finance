@@ -364,6 +364,7 @@ module gogeo {
         params: {
           mapkey: Configuration.getMapKey(),
           field: Configuration.getDateField(),
+          summary: Configuration.getAggSummary(),
           interval: Configuration.getInterval(),
           date_format: "YYYY-MM-DD",
           q: JSON.stringify(q)
