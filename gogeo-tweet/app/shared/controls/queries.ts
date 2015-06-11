@@ -124,7 +124,7 @@ module gogeo {
       return {
         query: {
           term: {
-            source: this.term
+            "typeestab.raw": this.term
           }
         }
       }

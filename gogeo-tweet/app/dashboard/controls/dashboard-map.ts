@@ -41,15 +41,24 @@ module gogeo {
         baseLayerSelected: string = "day";
         levent: any = null;
         thematicSelectedLayers: Array<string> = [
-            "android", "foursquare", "instagram", "iphone", "others", "web"
+            "restaurantes", "informatica", "alimentos", "construcao", "farmaceutico", "combustiveis", "hoteis"
         ];
+        // queries: any = {
+        //     android: '<a href="http://twitter.com/download/android" rel="nofollow">Twitter for Android</a>',
+        //     iphone: '<a href="http://twitter.com/download/iphone" rel="nofollow">Twitter for iPhone</a>',
+        //     web: '<a href="http://twitter.com" rel="nofollow">Twitter Web Client</a>',
+        //     instagram: '<a href="http://instagram.com" rel="nofollow">Instagram</a>',
+        //     foursquare: '<a href="http://foursquare.com" rel="nofollow">Foursquare</a>',
+        //     others: ''
+        // }
         queries: any = {
-            android: '<a href="http://twitter.com/download/android" rel="nofollow">Twitter for Android</a>',
-            iphone: '<a href="http://twitter.com/download/iphone" rel="nofollow">Twitter for iPhone</a>',
-            web: '<a href="http://twitter.com" rel="nofollow">Twitter Web Client</a>',
-            instagram: '<a href="http://instagram.com" rel="nofollow">Instagram</a>',
-            foursquare: '<a href="http://foursquare.com" rel="nofollow">Foursquare</a>',
-            others: ''
+            restaurantes: "Restaurantes e outros serviços de alimentação e bebidas",
+            informatica: "Comércio varejista de equipamentos de informática e comunicação",
+            alimentos: "Comércio varejista de produtos alimentícios, bebidas e fumo",
+            construcao: "Comércio varejista de material de construção",
+            farmaceutico: "Comércio varejista de produtos farmacêuticos, perfumaria e cosméticos e artigos médicos, ópticos e ortopédicos",
+            combustiveis: "Comércio varejista de combustíveis para veículos automotores",
+            hoteis: "Hotéis e similares",
         }
 
         _thematicLayers = new Rx.BehaviorSubject<Array<string>>(this.thematicSelectedLayers);
@@ -175,6 +184,7 @@ module gogeo {
         }
 
         private fitMap(bound: L.LatLngBounds) {
+            console.log("--------- fitbound");
             this.map.fitBounds(bound, { reset: true });
         }
 
@@ -356,7 +366,7 @@ module gogeo {
             }
 
             if (this.mapSelected === "thematic") {
-                stylename = "android_1";
+                stylename = "restaurantes_1";
             }
 
             if (this.mapSelected === "intensity") {
@@ -384,34 +394,39 @@ module gogeo {
             var array = [];
             var layer = null;
 
-            url = this.configureThematicUrl("iphone", "iphone_1");
+            url = this.configureThematicUrl("restaurantes", "restaurantes_1");
             layer = L.tileLayer(url, options);
-            this.thematicMaps["iphone"] = layer;
+            this.thematicMaps["restaurantes"] = layer;
             array.push(layer);
 
-            url = this.configureThematicUrl("android", "android_1");
+            url = this.configureThematicUrl("informatica", "informatica_1");
             layer = L.tileLayer(url, options);
-            this.thematicMaps["android"] = layer;
+            this.thematicMaps["informatica"] = layer;
             array.push(layer);
 
-            url = this.configureThematicUrl("others", "others_1");
+            url = this.configureThematicUrl("alimentos", "alimentos_1");
             layer = L.tileLayer(url, options);
-            this.thematicMaps["others"] = layer;
+            this.thematicMaps["alimentos"] = layer;
             array.push(layer);
 
-            url = this.configureThematicUrl("web", "web_1");
+            url = this.configureThematicUrl("construcao", "construcao_1");
             layer = L.tileLayer(url, options);
-            this.thematicMaps["web"] = layer;
+            this.thematicMaps["construcao"] = layer;
             array.push(layer);
 
-            url = this.configureThematicUrl("instagram", "instagram_1");
+            url = this.configureThematicUrl("farmaceutico", "farmaceutico_1");
             layer = L.tileLayer(url, options);
-            this.thematicMaps["instagram"] = layer;
+            this.thematicMaps["farmaceutico"] = layer;
             array.push(layer);
 
-            url = this.configureThematicUrl("foursquare", "foursquare_1");
+            url = this.configureThematicUrl("combustiveis", "combustiveis_1");
             layer = L.tileLayer(url, options);
-            this.thematicMaps["foursquare"] = layer;
+            this.thematicMaps["combustiveis"] = layer;
+            array.push(layer);
+
+            url = this.configureThematicUrl("hoteis", "hoteis_1");
+            layer = L.tileLayer(url, options);
+            this.thematicMaps["hoteis"] = layer;
             array.push(layer);
 
             return array;
@@ -430,7 +445,7 @@ module gogeo {
             };
 
             var url = this.configureUrl();
-            url = url.replace("android_1", stylename);
+            url = url.replace("restaurantes_1", stylename);
 
             this.query = originalQuery;
 

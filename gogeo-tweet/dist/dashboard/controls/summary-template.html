@@ -26,19 +26,22 @@
 </div> -->
 
 <div class="row">
-  <div class="col-md-4">
-    <h6 class="text-muted">Dia</h6>
+  <div class="col-md-6">
+    <h6 class="text-muted">Manhã</h6>
     <span class="numberpad" ng-show="!summary.service.isLoading()">
       {{summary.morning | currency: "R$"}}
     </span>
   </div>
-  <div class="col-md-4">
+  <div class="col-md-6">
     <h6 class="text-muted">Tarde</h6>
     <span class="numberpad" ng-show="!summary.service.isLoading()">
       {{summary.afternoon | currency: "R$"}}
     </span>
   </div>
-  <div class="col-md-4">
+</div>
+
+<div class="row">
+  <div class="col-md-6">
     <h6 class="text-muted">Noite</h6>
     <span class="numberpad" ng-show="!summary.service.isLoading()">
       {{summary.night | currency: "R$"}}

@@ -375,15 +375,22 @@ module gogeo {
     }
 
     getStatsAggregationSummary() {
-      var field = Configuration.getSummaryField();
+      var field = Configuration.getAggChartField();
       var groupBy = Configuration.getSummaryGroupBy();
 
       return this.getStatsAggregation(field, groupBy)
     }
 
-    getStatsAggregationPieChart() {
-      var field = Configuration.getPieChartField();
-      var groupBy = Configuration.getPieChartGroupBy();
+    getStatsAggregationTypePay() {
+      var field = Configuration.getAggChartField();
+      var groupBy = Configuration.getTypePayGroupBy();
+
+      return this.getStatsAggregation(field, groupBy)
+    }
+
+    getStatsAggregationTypeEstab() {
+      var field = Configuration.getAggChartField();
+      var groupBy = Configuration.getTypeEstabGroupBy();
 
       return this.getStatsAggregation(field, groupBy)
     }

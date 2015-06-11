@@ -21,7 +21,7 @@ module gogeo {
     static makeUrl(path: string) {
       var serverUrl: string = Configuration.apiUrl;
 
-      if (path.match(".*tile.png.*") || path.match(".*cluster.json.*") || path.match(".*aggregations.*")) {
+      if (path.match(".*tile.png.*") || path.match(".*cluster.json.*")) {
         serverUrl = Configuration.tileUrl;
       }
 
@@ -37,7 +37,7 @@ module gogeo {
     }
 
     static getDateRangeUrl(): string {
-      return Configuration.makeUrl("aggregations/" + Configuration.getDatabaseName() + "/" + Configuration.getCollectionName() + "/stats?mapkey=" + Configuration.getMapKey() + "&field=date");
+      return Configuration.makeUrl("aggregations/" + Configuration.getDatabaseName() + "/" + Configuration.getCollectionName() + "/stats?mapkey=" + Configuration.getMapKey() + "&field=" + Configuration.getDateField());
     }
 
     static getPlaceUrl(place: string): string {
@@ -53,7 +53,7 @@ module gogeo {
     }
 
     static getDatabaseName(): string {
-      return "dbtest";
+      return "demos";
     }
 
     static getMapKey(): string {
@@ -63,7 +63,7 @@ module gogeo {
 
     static getDateField(): string {
       // TODO: Export this to development/deployment config file
-      return "date";
+      return "datemmdd";
     }
 
     static getInterval(): string {
@@ -73,12 +73,12 @@ module gogeo {
 
     static getAggField(): string {
       // TODO: Export this to development/deployment config file
-      return "place_type"; 
+      return "typeestab"; 
     }
 
     static getAggSummary(): string {
       // TODO: Export this to development/deployment config file
-      return "amount"; 
+      return "value"; 
     }
 
     static getAggSize(): number {
@@ -86,24 +86,24 @@ module gogeo {
       return 0;
     }
 
-    static getPieChartField(): string {
+    static getAggChartField(): string {
       // TODO: Export this to development/deployment config file
-      return "amount"; 
+      return "value"; 
     }
 
-    static getPieChartGroupBy(): string {
+    static getTypePayGroupBy(): string {
       // TODO: Export this to development/deployment config file
-      return "sum,place_type"; 
+      return "sum,typepay"; 
     }
 
-    static getSummaryField(): string {
+    static getTypeEstabGroupBy(): string {
       // TODO: Export this to development/deployment config file
-      return "amount"; 
+      return "sum,typeestab.raw"; 
     }
 
     static getSummaryGroupBy(): string {
       // TODO: Export this to development/deployment config file
-      return "sum,type"; 
+      return "sum,period"; 
     }
 
     static getPlaceFields(): Array<string> {
@@ -114,20 +114,19 @@ module gogeo {
     static tweetFields(): Array<string> {
       // TODO: Export this to development/deployment config file
       return [
-        "name",
-        "amount",
-        "company_name",
-        "type",
-        "place_type",
-        "installment",
-        "installments",
-        "card_brand",
-        "cnae",
-        "cnae_label",
-        "date",
+        "people",
+        "address",
+        "value",
+        "typepay",
+        "payway",
+        "typeestab",
+        "flag",
+        "nameestab",
+        Configuration.getDateField(),
         "city",
         "state",
-        "cnpj"
+        "cnpj",
+        "status"
       ];
     }
   }
@@ -151,7 +150,7 @@ module gogeo {
             reloadOnSearch: false
           })
           .otherwise({
-            redirectTo: "/welcome",
+            redirectTo: "/dashboard",
             reloadOnSearch: false
           });
         if (window.location.hostname.match("gogeo.io")) {

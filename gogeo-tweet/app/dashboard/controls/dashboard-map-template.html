@@ -41,18 +41,18 @@
         <div class="row">
           <div class="col-md-7">
             <p>CLIENTE</p>
-            <p>{{ map.tweetResult['name'] }}</p>
+            <p>{{ map.tweetResult['people'] }}</p>
           </div>
           <div class="col-md-5">
             <p>VALOR</p>
-            <p><strong>{{ map.tweetResult['amount'] | currency: "R$" }}</strong></p>
+            <p><strong>{{ map.tweetResult['value'] | currency: "R$" }}</strong></p>
           </div>
         </div>
         <div style="padding-top: 15px; padding-right: 5px; font-size: 12px;">
           <div class="row">
             <div class="col-md-7">
               <p>TRANSAÇÃO</p>
-              <p>{{ map.tweetResult['card_brand'] }} / {{ map.tweetResult['type'] | capitalize:'first' }}</p>
+              <p>{{ map.tweetResult['flag'] | capitalize:'first' }} / {{ map.tweetResult['typepay'] | capitalize:'first' }}</p>
             </div>
             <div class="col-md-5">
               <p>STATUS</p>
@@ -65,12 +65,12 @@
       <div class="mc-tweet-msg">
         <div class="row">
           <div class="col-md-7">
-            <p>{{ map.tweetResult['cnae'] }}</p>
-            <p>{{ map.tweetResult['company_name'] | lowercase | capitalize:'all' }}</p>
+            <!-- <p>{{ map.tweetResult['typeestab'] }}</p> -->
+            <p>{{ map.tweetResult['nameestab'] | lowercase | capitalize:'all' }}</p>
           </div>
           <div class="col-md-5">
             <p>EQUIPAMENTO</p>
-            <p>Inexistente</p>
+            <p>{{ map.tweetResult['payway'] }}</p>
           </div>
         </div>
         <div class="row">
@@ -86,7 +86,7 @@
           </div>
           <div class="row">
             <div class="col-md-7">
-              <p>Inexistente</p>
+              <p>{{ map.tweetResult['address'] }}</p>
             </div>
             <div class="col-md-5">
               <p>Inexistente</p>

@@ -5,7 +5,7 @@ module gogeo {
 
     geom: IGeom = null;
     buffer: number = 0;
-    buffer_measure: string = null;
+    measure_buffer: string = null;
     q: any = {};
     limit: number = 0;
     fields: Array<string> = [];
@@ -14,14 +14,14 @@ module gogeo {
       private $http: ng.IHttpService,
       geom: IGeom,
       buffer: number,
-      buffer_measure: string,
+      measure_buffer: string,
       fields: Array<string>,
       limit: number,
       query?: any) {
 
       this.geom = geom;
       this.buffer = buffer;
-      this.buffer_measure = buffer_measure;
+      this.measure_buffer = measure_buffer;
       this.fields = fields;
       this.limit = limit;
       this.q = angular.toJson(query);
@@ -34,7 +34,7 @@ module gogeo {
         geom: this.geom,
         limit: this.limit,
         buffer: this.buffer,
-        buffer_measure: this.buffer_measure,
+        measure_buffer: this.measure_buffer,
         fields: this.fields,
         q: this.q
       }

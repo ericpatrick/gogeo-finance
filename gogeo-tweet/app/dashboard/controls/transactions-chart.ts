@@ -9,7 +9,9 @@ module gogeo {
     ];
 
     buckets: Array<any> = [];
+    typeEstabBuckets: Array<any> = [];
     options: any = {};
+    typeEstabOptions: any = {};
 
     constructor(
       private $scope:   ng.IScope,
@@ -29,25 +31,46 @@ module gogeo {
 
     getDataChart() {
 
-      this.buckets = [
-        // {label: "one", value: 12.2, color: "red"}, 
-        // {label: "two", value: 45, color: "#00ff00"},
-        // {label: "three", value: 10, color: "rgb(0, 0, 255)"} 
-
-        // {key: "one", y: 12.2}, 
-        // {key: "two", y: 45},
-        // {key: "three", y: 10}
-      ];
-
       this.configureChartOptions();
 
-      this.service.getStatsAggregationSummary().success((result:Array<IStatsSumAgg>) => {
+      this.service.getStatsAggregationTypePay().success((result:Array<IStatsSumAgg>) => {
+        this.buckets = [
+          // {label: "one", value: 12.2, color: "red"}, 
+          // {label: "two", value: 45, color: "#00ff00"},
+          // {label: "three", value: 10, color: "rgb(0, 0, 255)"} 
+
+          // {key: "one", y: 12.2}, 
+          // {key: "two", y: 45},
+          // {key: "three", y: 10}
+        ];
         // var colors = [ "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
         result.forEach((item) => {
           // console.log("********", item);
           this.buckets.push(
             {
               x: item['key'].toUpperCase(),
+              y: item['sum']
+            }
+          );
+        })
+      });
+
+      this.service.getStatsAggregationTypeEstab().success((result:Array<IStatsSumAgg>) => {
+        this.typeEstabBuckets = [
+          // {label: "one", value: 12.2, color: "red"}, 
+          // {label: "two", value: 45, color: "#00ff00"},
+          // {label: "three", value: 10, color: "rgb(0, 0, 255)"} 
+
+          // {key: "one", y: 12.2}, 
+          // {key: "two", y: 45},
+          // {key: "three", y: 10}
+        ];
+        // var colors = [ "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
+        result.forEach((item) => {
+          // console.log("********", item);
+          this.typeEstabBuckets.push(
+            {
+              x: item['key'],
               y: item['sum']
             }
           );
@@ -74,7 +97,7 @@ module gogeo {
           labelThreshold: 0.01,
           showLegend: false,
           color: function (d, i) {
-            var colors = [ "#FF7F0E", "#4393C3" ];
+            var colors = [ "#FF7F0E", "#4393C3", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D" ];
             return colors[i % colors.length];
           }
           // tooltipContent: function (key, y, e, graph) {
@@ -95,6 +118,28 @@ module gogeo {
           }
         }
       };
+
+      this.typeEstabOptions = Object.create(this.options);
+
+      this.typeEstabOptions["chart"]["x"] = function(d) {
+          return self.getReducedName(d.x);
+      };
+
+      this.typeEstabOptions["title"]["text"] = "SHARE DE TIPOS DE ESTABELECIMENTOS";
+    }
+
+    getReducedName(key: string) {
+      var reducedNames = {
+        "Restaurantes e outros serviços de alimentação e bebidas": "restaurantes",
+        "Comércio varejista de equipamentos de informática e comunicação; equipamentos e artigos de uso doméstico": "informatica",
+        "Comércio varejista de produtos alimentícios, bebidas e fumo": "alimentos",
+        "Comércio varejista de material de construção": "construcao",
+        "Comércio varejista de produtos farmacêuticos, perfumaria e cosméticos e artigos médicos, ópticos e ortopédicos": "farmaceutico",
+        "Comércio varejista de combustíveis para veículos automotores": "combustiveis",
+        "Hotéis e similares": "hoteis"
+      };
+
+      return reducedNames[key]
     }
   }
 

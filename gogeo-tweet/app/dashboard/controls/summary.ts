@@ -8,8 +8,6 @@ module gogeo {
       DashboardService.$named
     ];
 
-    credit: number = 0;
-    debit: number = 0;
     morning: number = 0;
     afternoon: number = 0;
     night: number = 0;
@@ -29,10 +27,12 @@ module gogeo {
       this.service.getStatsAggregationSummary().success((result:Array<IStatsSumAgg>) => {
         // var colors = [ "#053061", "#2166AC", "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
         result.forEach((item) => {
-          if(item["key"] == "crédito") {
-            this.credit = item["sum"];
+          if(item["key"] == "tarde") {
+            this.afternoon = item["sum"];
+          } if(item["key"] == "noite") {
+            this.night = item["sum"];
           } else {
-            this.debit = item["sum"];
+            this.morning = item["sum"];
           }
         })
       });
