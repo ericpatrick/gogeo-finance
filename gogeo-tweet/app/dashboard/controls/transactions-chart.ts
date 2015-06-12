@@ -97,7 +97,7 @@ module gogeo {
           labelThreshold: 0.01,
           showLegend: false,
           color: function (d, i) {
-            var colors = [ "#FF7F0E", "#4393C3", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D" ];
+            var colors = [ "#FF7F0E", "#4393C3" ];
             return colors[i % colors.length];
           }
           // tooltipContent: function (key, y, e, graph) {
@@ -119,10 +119,15 @@ module gogeo {
         }
       };
 
-      this.typeEstabOptions = Object.create(this.options);
+      this.typeEstabOptions = JSON.parse(JSON.stringify(this.options));
 
       this.typeEstabOptions["chart"]["x"] = function(d) {
           return self.getReducedName(d.x);
+      };
+
+      this.typeEstabOptions["chart"]["color"] = function(d, i) {
+          var colors = [ "#2166AC", "#4A3BAE", "#17AB09", "#D81E1E", "#1E3E4A", "#E34E0C", "#838181" ];
+            return colors[i % colors.length];
       };
 
       this.typeEstabOptions["title"]["text"] = "SHARE DE TIPOS DE ESTABELECIMENTOS";

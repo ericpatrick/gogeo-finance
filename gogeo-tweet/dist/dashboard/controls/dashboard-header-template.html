@@ -17,13 +17,58 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <form class="navbar-form form-inline search-input-container" role="search">
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <input type="text" class="form-control" placeholder="Looking for something?" ng-model="header.somethingTerm"/>
+                </div> -->
+                <div class="form-group">
+                    <script type="text/ng-template" id="/search-autocomplete-template.html">
+                    <div class="angucomplete-holder" ng-class="{'angucomplete-dropdown-visible': showDropdown}">
+                      <input ng-model="searchStr"
+                        ng-disabled="disableInput"
+                        type="text"
+                        placeholder="{{placeholder}}"
+                        ng-focus="onFocusHandler()"
+                        class="{{inputClass}}"
+                        ng-focus="resetHideResults()"
+                        ng-blur="hideResults($event)"
+                        autocapitalize="off"
+                        autocorrect="off"
+                        autocomplete="off"
+                        ng-change="inputChangeHandler(searchStr)"/>
+                      <div class="angucomplete-dropdown" ng-show="showDropdown">
+                        <div class="angucomplete-searching" ng-show="searching" ng-bind="textSearching"></div>
+                        <div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)" ng-bind="textNoResults"></div>
+                        <div class="angucomplete-row" ng-repeat="result in results | limitTo:8" ng-click="selectResult(result)" ng-mouseenter="hoverRow($index)" ng-class="{'angucomplete-selected-row': $index == currentIndex}">
+                          <div ng-if="imageField" class="angucomplete-image-holder">
+                            <img ng-if="result.image && result.image != ''" ng-src="{{result.image}}" class="angucomplete-image"/>
+                            <div ng-if="!result.image && result.image != ''" class="angucomplete-image-default"></div>
+                          </div>
+                          <div class="angucomplete-title" ng-if="matchClass" ng-bind-html="result.title"></div>
+                          <div class="angucomplete-title" ng-if="!matchClass">{{ result.title }}</div>
+                          <div ng-if="matchClass && result.description && result.description != ''" class="angucomplete-description" ng-bind-html="result.description"></div>
+                          <div ng-if="!matchClass && result.description && result.description != ''" class="angucomplete-description">{{result.description}}</div>
+                        </div>
+                      </div>
+                    </div>
+                    </script>
+
+                    <angucomplete-alt id="ex1"
+                                      placeholder="Onde? (cidade)"
+                                      pause="100"
+                                      selected-object="header.place"
+                                      local-data="header.citiesToSearch"
+                                      search-fields="city"
+                                      title-field="city"
+                                      description-field="state"
+                                      minlength="3"
+                                      template-url="/search-autocomplete-template.html"
+                                      match-class="highlight"
+                                      input-class="form-control"/>
                 </div>
 
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <input type="text" class="form-control" placeholder="Where? Country only" ng-model="header.place"/>
-                </div>
+                </div> -->
 
                 <div class="form-group">
                     <daterange data-start-date="header.startDate" data-end-date="header.endDate"></daterange>

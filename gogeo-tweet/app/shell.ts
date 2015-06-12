@@ -4,8 +4,13 @@
 module gogeo {
 
   export var settings;
+  export var placesToSearch;
 
   export class Configuration {
+    static getPlacesToSearch() {
+      return <any> placesToSearch;
+    }
+
     static get apiUrl() {
       return <string> settings["api.url"];
     }
@@ -131,7 +136,7 @@ module gogeo {
     }
   }
 
-  var mod = angular.module("gogeo", ["ngRoute", "ngCookies", "angularytics", "linkify", "ngGeolocation", "nvd3", 'angular-capitalize-filter'])
+  var mod = angular.module("gogeo", ["ngRoute", "ngCookies", "angularytics", "linkify", "ngGeolocation", "nvd3", "angular-capitalize-filter", "angucomplete-alt"])
     .config([
       "$routeProvider",
       "AngularyticsProvider",

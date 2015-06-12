@@ -16,6 +16,7 @@ module gogeo {
     startDate: string = null;
     endDate: string = null;
     dateFormat: string = "MM/DD/YYYY";
+    citiesToSearch: Array<any> = Configuration.getPlacesToSearch();
 
     constructor($scope:     ng.IScope,
           public service: DashboardService) {
@@ -35,7 +36,13 @@ module gogeo {
         .subscribeAndApply(this.$scope, (result: any) => {
           this.loadParams(result);
         });
+
+      this.citiesToSearch = Configuration.getPlacesToSearch();
     }
+
+    countrySelected(selected: any) {
+      window.alert('You have selected ' + JSON.stringify(selected.originalObject));
+    };
 
     private loadParams(result: any) {
       if (!result || JSON.stringify(result) === JSON.stringify({})) {

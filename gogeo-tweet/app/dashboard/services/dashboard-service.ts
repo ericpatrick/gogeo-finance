@@ -72,7 +72,7 @@ module gogeo {
     _lastQueryObservable = new Rx.BehaviorSubject<any>(null);
     _tweetObservable = new Rx.BehaviorSubject<Array<ITransaction>>(null);
     _dateLimitObservable = new Rx.BehaviorSubject<any>(null);
-    _placeBoundObservable = new Rx.BehaviorSubject<L.LatLngBounds>(null);
+    _placeBoundObservable = new Rx.BehaviorSubject<L.LatLng>(null);
     _loadParamsObservable = new Rx.BehaviorSubject<any>(null);
 
     constructor(private $q:       ng.IQService,
@@ -138,7 +138,7 @@ module gogeo {
       return this._dateLimitObservable;
     }
 
-    get placeBoundObservable():Rx.BehaviorSubject<L.LatLngBounds> {
+    get placeBoundObservable():Rx.BehaviorSubject<L.LatLng> {
       return this._placeBoundObservable;
     }
 
@@ -156,6 +156,26 @@ module gogeo {
         .merge<any>(this._somethingTermsObservable, this._placeObservable)
         .throttle(800)
         .subscribe(() => this.search());
+    }
+
+    private getBoundOfPlace(placeString: string) {
+      if (placeString) {
+        var place = placeString["originalObject"];
+        var lat = place["lat"];
+        var lon = place["long"];
+
+        var points = L.latLng(lat, lon);
+        this._placeBoundObservable.onNext(points);
+
+        // this._lastPlaceCode = country_code;
+        this._lastPlaceString = place["city"];
+        this._placeObservable.onNext(this._lastPlaceString);
+      } else {
+          // this._lastPlaceCode = null;
+          this._lastPlaceString = null;
+          // this._placeObservable.onNext(this._lastPlaceCode);
+          this._placeObservable.onNext(this._lastPlaceString);
+      }
     }
 
     private calculateNeSW(bounds: L.LatLngBounds) {
@@ -305,14 +325,19 @@ module gogeo {
       this._somethingTermsObservable.onNext(terms);
     }
 
-    updatePlace(place: string) {
-      if (place) {
-        this._lastPlaceString = place;
-      } else {
-        this._lastPlaceString = null;
-      }
+    // updatePlace(place: string) {
+    //   console.log("---------------");
+    //   if (place) {
+    //     this._lastPlaceString = place;
+    //   } else {
+    //     this._lastPlaceString = null;
+    //   }
 
-      this._placeObservable.onNext(this._lastPlaceString);
+    //   this._placeObservable.onNext(this._lastPlaceString);
+    // }
+
+    updatePlace(place: string) {
+        this.getBoundOfPlace(place);
     }
 
     updateDateRange(startDate: Date, endDate: Date) {

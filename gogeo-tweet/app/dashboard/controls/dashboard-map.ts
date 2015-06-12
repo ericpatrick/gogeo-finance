@@ -106,8 +106,8 @@ module gogeo {
                 .subscribeAndApply(this.$scope, geom => this.handleGeom(geom));
 
             this.service.placeBoundObservable
-                 .where(bound => bound != null)
-                .subscribeAndApply(this.$scope, bound => this.fitMap(bound));
+                 .where(point => point != null)
+                .subscribeAndApply(this.$scope, point => this.fitMap(point));
 
             this.service.loadParamsObservable
                 .subscribeAndApply(this.$scope, (result: any) => {
@@ -183,9 +183,9 @@ module gogeo {
             }
         }
 
-        private fitMap(bound: L.LatLngBounds) {
-            console.log("--------- fitbound");
-            this.map.fitBounds(bound, { reset: true });
+        private fitMap(point: L.LatLng) {
+            // this.map.setZoom(12);
+            this.map.panTo(point);
         }
 
         initializeLayer() {
