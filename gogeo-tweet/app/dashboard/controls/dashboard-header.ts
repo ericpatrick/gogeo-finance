@@ -13,9 +13,11 @@ module gogeo {
 
     somethingTerm: string;
     place: string;
-    startDate: string = null;
-    endDate: string = null;
+    typeEstab: string;
+    startDate: string = "04/20/2015";
+    endDate: string = "05/31/2015";
     dateFormat: string = "MM/DD/YYYY";
+    selected: any = ""
     citiesToSearch: Array<any> = Configuration.getPlacesToSearch();
 
     constructor($scope:     ng.IScope,
@@ -23,6 +25,9 @@ module gogeo {
       super($scope);
 
       this.initialize();
+
+      this.startDate = "04/21/2015";
+      this.endDate = "05/29/2015";
 
       this.service.dateLimitObservable
         .subscribeAndApply(this.$scope, (result: any) => {
@@ -39,10 +44,6 @@ module gogeo {
 
       this.citiesToSearch = Configuration.getPlacesToSearch();
     }
-
-    countrySelected(selected: any) {
-      window.alert('You have selected ' + JSON.stringify(selected.originalObject));
-    };
 
     private loadParams(result: any) {
       if (!result || JSON.stringify(result) === JSON.stringify({})) {
@@ -94,6 +95,11 @@ module gogeo {
         .skip(1)
         .throttle(800)
         .subscribe(place => this.service.updatePlace(place));
+
+      this.watchAsObservable<string>("typeEstab")
+        .skip(1)
+        .throttle(800)
+        .subscribe(typeEstab => this.service.updateTypeEstab(typeEstab));
 
       Rx.Observable.merge(this.watchAsObservable<string>("startDate"), this.watchAsObservable<string>("endDate"))
         .skip(1)

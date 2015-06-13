@@ -33,6 +33,7 @@ module gogeo {
     private _lastMapZoom: number = 0;
     private _lastMapType: string = null;
     private _lastMapBase: string = null;
+    private _lastTypeEstab: string = null;
     private _loading: boolean = true;
 
     private worldBound: IGeom = {
@@ -74,6 +75,7 @@ module gogeo {
     _dateLimitObservable = new Rx.BehaviorSubject<any>(null);
     _placeBoundObservable = new Rx.BehaviorSubject<L.LatLng>(null);
     _loadParamsObservable = new Rx.BehaviorSubject<any>(null);
+    _lastTypeEstabObservable = new Rx.BehaviorSubject<string>(null);
 
     constructor(private $q:       ng.IQService,
           private $http:      ng.IHttpService,
@@ -82,7 +84,7 @@ module gogeo {
           private $routeParams:   ng.route.IRouteParamsService) {
 
       this.initialize();
-      this.getDateRange();
+      // this.getDateRange();
       this.loadParams();
     }
 
@@ -146,6 +148,10 @@ module gogeo {
       return this._loadParamsObservable;
     }
 
+    get lastTypeEstabObservable():Rx.BehaviorSubject<string> {
+      return this._lastTypeEstabObservable;
+    }
+
     initialize() {
       Rx.Observable
         .merge<any>(this._geomSpaceObservable, this._hashtagFilterObservable, this._dateRangeObservable)
@@ -153,7 +159,7 @@ module gogeo {
         .subscribe(() => this.search());
 
       Rx.Observable
-        .merge<any>(this._somethingTermsObservable, this._placeObservable)
+        .merge<any>(this._somethingTermsObservable, this._placeObservable, this._lastTypeEstabObservable)
         .throttle(800)
         .subscribe(() => this.search());
     }
@@ -340,6 +346,16 @@ module gogeo {
         this.getBoundOfPlace(place);
     }
 
+    updateTypeEstab(typeEstab: string) {
+        if(typeEstab) {
+          this._lastTypeEstab = typeEstab;
+        } else {
+          this._lastTypeEstab = null;
+        }
+
+        this._placeObservable.onNext(this._lastTypeEstab);
+    }
+
     updateDateRange(startDate: Date, endDate: Date) {
       var dateRange: IDateRange = null;
 
@@ -384,6 +400,10 @@ module gogeo {
       var q = this.composeQuery().requestData.q;
 
       // console.log("->", JSON.stringify(q, null, 2));
+      var queryGeom = {
+        type: "Polygon",
+        coordinates: this._lastGeomSpace.coordinates
+      };
 
       var options = {
         params: {
@@ -392,7 +412,8 @@ module gogeo {
           summary: Configuration.getAggSummary(),
           interval: Configuration.getInterval(),
           date_format: "YYYY-MM-DD",
-          q: JSON.stringify(q)
+          q: JSON.stringify(q),
+          geom: JSON.stringify(queryGeom)
         }
       };
 
@@ -424,6 +445,11 @@ module gogeo {
       var url = Configuration.makeUrl("aggregations/" + Configuration.getDatabaseName() + "/" + Configuration.getCollectionName() + "/stats");
       var q = this.composeQuery().requestData.q;
 
+      var queryGeom = {
+        type: "Polygon",
+        coordinates: this._lastGeomSpace.coordinates
+      };
+
       // console.log("->", JSON.stringify(q, null, 2));
 
       var options = {
@@ -431,7 +457,8 @@ module gogeo {
           mapkey: Configuration.getMapKey(),
           field: field,
           group_by: groupBy,
-          q: JSON.stringify(q)
+          q: JSON.stringify(q),
+          geom: JSON.stringify(queryGeom)
         }
       };
 
@@ -502,6 +529,10 @@ module gogeo {
 
       if (this._lastDateRange) {
         query.filterByDateRange(this._lastDateRange);
+      }
+
+      if (this._lastTypeEstab) {
+        query.filterByTypeEstab(this._lastTypeEstab);
       }
 
       return query;

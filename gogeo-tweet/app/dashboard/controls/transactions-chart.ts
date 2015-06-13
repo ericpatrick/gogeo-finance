@@ -96,6 +96,7 @@ module gogeo {
           transitionDuration: 500,
           labelThreshold: 0.01,
           showLegend: false,
+          // donutRatio: 0.2,
           color: function (d, i) {
             var colors = [ "#FF7F0E", "#4393C3" ];
             return colors[i % colors.length];

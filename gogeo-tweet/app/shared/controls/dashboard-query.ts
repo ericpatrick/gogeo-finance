@@ -90,19 +90,11 @@ module gogeo {
     }
 
     filterByPlace(text: string) {
-      var must = this.getMust();
-      var placeQueryString = new TextQueryBuilder(TextQueryBuilder.Place, text);
+      this.filterByField(text, "city")
+    }
 
-      console.log("placeQueryString", JSON.stringify(placeQueryString.build(), null, 2));
-
-      // var filter:any = this.requestData.q.query.filtered.filter;
-      // var and = this.getOrCreateAndRestriction(filter);
-
-      // var queryString = new TextQueryBuilder(TextQueryBuilder.Place, text);
-      // var boolQuery = new BoolQuery();
-      // boolQuery.addMustQuery(queryString);
-
-      // and.filters.push(boolQuery.build());
+    filterByTypeEstab(text: string) {
+      this.filterByField(text, "typeestab");
     }
 
     filterByDateRange(range: IDateRange) {
@@ -110,6 +102,13 @@ module gogeo {
 
       var dateRangeQuery = new DateRangeQueryBuilder(DateRangeQueryBuilder.DateRange, range);
       must.push(dateRangeQuery.build());
+    }
+
+    filterByField(text: string, field: string) {
+      var must = this.getMust();
+
+      var placeQueryString = new MatchPhraseQuery(text, field);
+      must.push(placeQueryString.build());
     }
 
     getMust() {

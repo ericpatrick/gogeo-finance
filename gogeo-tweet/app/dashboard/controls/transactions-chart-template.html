@@ -7,16 +7,16 @@
 
    <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist">
-    <li><a data-target="#type-estab" data-toggle="tab">Estabelecimento</a></li>
-    <li class="active"><a data-target="#type-pay" data-toggle="tab">Pagamento</a></li>
+    <li><a data-target="#type-pay" data-toggle="tab">Pagamento</a></li>
+    <li class="active"><a data-target="#type-estab" data-toggle="tab">Estabelecimento</a></li>
   </ul>
 
   <!-- Tab panes -->
   <div class="tab-content">
-    <div class="tab-pane active" id="type-pay">
+    <div class="tab-pane" id="type-pay">
   		<nvd3 data="transactions.buckets" options="transactions.options"></nvd3>
     </div>
-    <div class="tab-pane" id="type-estab">
+    <div class="tab-pane active" id="type-estab">
   		<nvd3 data="transactions.typeEstabBuckets" options="transactions.typeEstabOptions"></nvd3>
     </div>
   </div>

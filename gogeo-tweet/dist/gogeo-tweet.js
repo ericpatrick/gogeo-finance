@@ -442,6 +442,23 @@ var gogeo;
         return SourceTermQuery;
     })();
     gogeo.SourceTermQuery = SourceTermQuery;
+    var MatchPhraseQuery = (function () {
+        function MatchPhraseQuery(term, field) {
+            this.term = term;
+            this.field = field;
+        }
+        MatchPhraseQuery.prototype.build = function () {
+            var query = {
+                match_phrase: {}
+            };
+            query["match_phrase"][this.field] = {
+                query: this.term
+            };
+            return query;
+        };
+        return MatchPhraseQuery;
+    })();
+    gogeo.MatchPhraseQuery = MatchPhraseQuery;
 })(gogeo || (gogeo = {}));
 var gogeo;
 (function (gogeo) {
@@ -520,20 +537,20 @@ var gogeo;
             // and.filters.push(queryString.build());
         };
         DashboardQuery.prototype.filterByPlace = function (text) {
-            var must = this.getMust();
-            var placeQueryString = new gogeo.TextQueryBuilder(gogeo.TextQueryBuilder.Place, text);
-            console.log("placeQueryString", JSON.stringify(placeQueryString.build(), null, 2));
-            // var filter:any = this.requestData.q.query.filtered.filter;
-            // var and = this.getOrCreateAndRestriction(filter);
-            // var queryString = new TextQueryBuilder(TextQueryBuilder.Place, text);
-            // var boolQuery = new BoolQuery();
-            // boolQuery.addMustQuery(queryString);
-            // and.filters.push(boolQuery.build());
+            this.filterByField(text, "city");
+        };
+        DashboardQuery.prototype.filterByTypeEstab = function (text) {
+            this.filterByField(text, "typeestab");
         };
         DashboardQuery.prototype.filterByDateRange = function (range) {
             var must = this.getMust();
             var dateRangeQuery = new gogeo.DateRangeQueryBuilder(gogeo.DateRangeQueryBuilder.DateRange, range);
             must.push(dateRangeQuery.build());
+        };
+        DashboardQuery.prototype.filterByField = function (text, field) {
+            var must = this.getMust();
+            var placeQueryString = new gogeo.MatchPhraseQuery(text, field);
+            must.push(placeQueryString.build());
         };
         DashboardQuery.prototype.getMust = function () {
             return this.requestData.q.query.bool.must;
@@ -814,6 +831,7 @@ var gogeo;
             this._lastMapZoom = 0;
             this._lastMapType = null;
             this._lastMapBase = null;
+            this._lastTypeEstab = null;
             this._loading = true;
             this.worldBound = {
                 type: "Polygon",
@@ -853,8 +871,9 @@ var gogeo;
             this._dateLimitObservable = new Rx.BehaviorSubject(null);
             this._placeBoundObservable = new Rx.BehaviorSubject(null);
             this._loadParamsObservable = new Rx.BehaviorSubject(null);
+            this._lastTypeEstabObservable = new Rx.BehaviorSubject(null);
             this.initialize();
-            this.getDateRange();
+            // this.getDateRange();
             this.loadParams();
         }
         DashboardService.prototype.loadParams = function () {
@@ -951,6 +970,13 @@ var gogeo;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DashboardService.prototype, "lastTypeEstabObservable", {
+            get: function () {
+                return this._lastTypeEstabObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         DashboardService.prototype.initialize = function () {
             var _this = this;
             Rx.Observable
@@ -958,7 +984,7 @@ var gogeo;
                 .throttle(400)
                 .subscribe(function () { return _this.search(); });
             Rx.Observable
-                .merge(this._somethingTermsObservable, this._placeObservable)
+                .merge(this._somethingTermsObservable, this._placeObservable, this._lastTypeEstabObservable)
                 .throttle(800)
                 .subscribe(function () { return _this.search(); });
         };
@@ -1114,6 +1140,15 @@ var gogeo;
         DashboardService.prototype.updatePlace = function (place) {
             this.getBoundOfPlace(place);
         };
+        DashboardService.prototype.updateTypeEstab = function (typeEstab) {
+            if (typeEstab) {
+                this._lastTypeEstab = typeEstab;
+            }
+            else {
+                this._lastTypeEstab = null;
+            }
+            this._placeObservable.onNext(this._lastTypeEstab);
+        };
         DashboardService.prototype.updateDateRange = function (startDate, endDate) {
             var dateRange = null;
             if (startDate || endDate) {
@@ -1149,6 +1184,10 @@ var gogeo;
             var url = gogeo.Configuration.makeUrl("aggregations/" + gogeo.Configuration.getDatabaseName() + "/" + gogeo.Configuration.getCollectionName() + "/date_histogram");
             var q = this.composeQuery().requestData.q;
             // console.log("->", JSON.stringify(q, null, 2));
+            var queryGeom = {
+                type: "Polygon",
+                coordinates: this._lastGeomSpace.coordinates
+            };
             var options = {
                 params: {
                     mapkey: gogeo.Configuration.getMapKey(),
@@ -1156,7 +1195,8 @@ var gogeo;
                     summary: gogeo.Configuration.getAggSummary(),
                     interval: gogeo.Configuration.getInterval(),
                     date_format: "YYYY-MM-DD",
-                    q: JSON.stringify(q)
+                    q: JSON.stringify(q),
+                    geom: JSON.stringify(queryGeom)
                 }
             };
             return this.$http.get(url, options);
@@ -1179,13 +1219,18 @@ var gogeo;
         DashboardService.prototype.getStatsAggregation = function (field, groupBy) {
             var url = gogeo.Configuration.makeUrl("aggregations/" + gogeo.Configuration.getDatabaseName() + "/" + gogeo.Configuration.getCollectionName() + "/stats");
             var q = this.composeQuery().requestData.q;
+            var queryGeom = {
+                type: "Polygon",
+                coordinates: this._lastGeomSpace.coordinates
+            };
             // console.log("->", JSON.stringify(q, null, 2));
             var options = {
                 params: {
                     mapkey: gogeo.Configuration.getMapKey(),
                     field: field,
                     group_by: groupBy,
-                    q: JSON.stringify(q)
+                    q: JSON.stringify(q),
+                    geom: JSON.stringify(queryGeom)
                 }
             };
             return this.$http.get(url, options);
@@ -1240,6 +1285,9 @@ var gogeo;
             }
             if (this._lastDateRange) {
                 query.filterByDateRange(this._lastDateRange);
+            }
+            if (this._lastTypeEstab) {
+                query.filterByTypeEstab(this._lastTypeEstab);
             }
             return query;
         };
@@ -1380,11 +1428,14 @@ var gogeo;
             var _this = this;
             _super.call(this, $scope);
             this.service = service;
-            this.startDate = null;
-            this.endDate = null;
+            this.startDate = "04/20/2015";
+            this.endDate = "05/31/2015";
             this.dateFormat = "MM/DD/YYYY";
+            this.selected = "";
             this.citiesToSearch = gogeo.Configuration.getPlacesToSearch();
             this.initialize();
+            this.startDate = "04/21/2015";
+            this.endDate = "05/29/2015";
             this.service.dateLimitObservable
                 .subscribeAndApply(this.$scope, function (result) {
                 if (result) {
@@ -1398,10 +1449,6 @@ var gogeo;
             });
             this.citiesToSearch = gogeo.Configuration.getPlacesToSearch();
         }
-        DashboardController.prototype.countrySelected = function (selected) {
-            window.alert('You have selected ' + JSON.stringify(selected.originalObject));
-        };
-        ;
         DashboardController.prototype.loadParams = function (result) {
             if (!result || JSON.stringify(result) === JSON.stringify({})) {
                 return;
@@ -1445,6 +1492,10 @@ var gogeo;
                 .skip(1)
                 .throttle(800)
                 .subscribe(function (place) { return _this.service.updatePlace(place); });
+            this.watchAsObservable("typeEstab")
+                .skip(1)
+                .throttle(800)
+                .subscribe(function (typeEstab) { return _this.service.updateTypeEstab(typeEstab); });
             Rx.Observable.merge(this.watchAsObservable("startDate"), this.watchAsObservable("endDate"))
                 .skip(1)
                 .throttle(400)
@@ -1624,8 +1675,7 @@ var gogeo;
             }
         };
         DashboardMapController.prototype.fitMap = function (point) {
-            // this.map.setZoom(12);
-            this.map.panTo(point);
+            this.map.setView(point, 12);
         };
         DashboardMapController.prototype.initializeLayer = function () {
             var _this = this;
@@ -2353,6 +2403,7 @@ var gogeo;
                     transitionDuration: 500,
                     labelThreshold: 0.01,
                     showLegend: false,
+                    // donutRatio: 0.2,
                     color: function (d, i) {
                         var colors = ["#FF7F0E", "#4393C3"];
                         return colors[i % colors.length];

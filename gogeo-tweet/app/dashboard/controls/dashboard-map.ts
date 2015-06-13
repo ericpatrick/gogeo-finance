@@ -184,8 +184,7 @@ module gogeo {
         }
 
         private fitMap(point: L.LatLng) {
-            // this.map.setZoom(12);
-            this.map.panTo(point);
+            this.map.setView(point, 12);
         }
 
         initializeLayer() {
