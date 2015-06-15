@@ -104,6 +104,13 @@ module gogeo {
       must.push(dateRangeQuery.build());
     }
 
+    filterByValueRange(range: IValueRange) {
+      var must = this.getMust();
+
+      var valueRangeQuery = new ValueRangeQueryBuilder(ValueRangeQueryBuilder.ValueRange, range);
+      must.push(valueRangeQuery.build());
+    }
+
     filterByField(text: string, field: string) {
       var must = this.getMust();
 

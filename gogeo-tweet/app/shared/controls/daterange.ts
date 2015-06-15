@@ -43,8 +43,8 @@ module gogeo {
                         type="text"
                         data-provide="datepicker"
                         data-date-clear-btn="true"
-                        data-date-start-date="{{range.min}}"
-                        data-date-end-date="{{range.max}}"
+                        data-date-start-date="04/21/2015"
+                        data-date-end-date="05/30/2015"
                         data-date-autoclose="true"
                         ng-model="startDate"/>
                     <span class="input-group-addon">
@@ -56,8 +56,8 @@ module gogeo {
                         type="text"
                         data-provide="datepicker"
                         data-date-clear-btn="true"
-                        data-date-start-date="{{range.min}}"
-                        data-date-end-date="{{range.max}}"
+                        data-date-start-date="04/21/2015"
+                        data-date-end-date="05/30/2015"
                         data-date-autoclose="true"
                         ng-model="endDate"/>
                 </div>`,

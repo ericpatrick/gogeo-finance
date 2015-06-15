@@ -79,6 +79,20 @@
                     </select>
                 </div>
 
+                <div class="form-group" style="position: relative; width: 210px; margin: 0px 10px">
+                    <slider
+                        ng-model="header.rangeValueMin"
+                        ng-model-range="header.rangeValueMax"
+                        floor="0"
+                        ceiling="10339"
+                        step="10"
+                        buffer="1500"
+                        stretch="3"
+                        translate-fn="header.formatRangeValue"
+                        translate-range-fn="">
+                    </slider>
+                </div>
+
                 <div class="form-group">
                     <daterange data-start-date="header.startDate" data-end-date="header.endDate"></daterange>
                 </div>

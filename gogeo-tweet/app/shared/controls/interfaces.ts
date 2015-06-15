@@ -80,6 +80,11 @@ module gogeo {
     end: Date;
   }
 
+  export interface IValueRange {
+    min: number;
+    max: number;
+  }
+
   export interface IDateHistogram {
     timestamp: number;
     date_string: string;

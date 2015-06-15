@@ -116,6 +116,31 @@ module gogeo {
     }
   }
 
+  export class ValueRangeQueryBuilder implements Query {
+    static ValueRange = Configuration.getValueField();
+
+    constructor(public field: string, public range: IValueRange) {}
+
+    build() {
+      var query = {
+        range : {}
+      };
+
+      var fieldRestriction = query.range[this.field] = {};
+      var range = this.range;
+
+      if (range.min) {
+        fieldRestriction["gte"] = range.min;
+      }
+
+      if (range.max) {
+        fieldRestriction["lte"] = range.max;
+      }
+
+      return query;
+    }
+  }
+
   export class SourceTermQuery implements Query {
 
     constructor(public term: string) {}

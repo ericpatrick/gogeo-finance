@@ -71,6 +71,11 @@ module gogeo {
       return "datemmdd";
     }
 
+    static getValueField(): string {
+      // TODO: Export this to development/deployment config file
+      return "value";
+    }
+
     static getInterval(): string {
       // TODO: Export this to development/deployment config file
       return "day";
@@ -83,7 +88,7 @@ module gogeo {
 
     static getAggSummary(): string {
       // TODO: Export this to development/deployment config file
-      return "value"; 
+      return Configuration.getValueField(); 
     }
 
     static getAggSize(): number {
@@ -93,7 +98,7 @@ module gogeo {
 
     static getAggChartField(): string {
       // TODO: Export this to development/deployment config file
-      return "value"; 
+      return Configuration.getValueField(); 
     }
 
     static getTypePayGroupBy(): string {
@@ -121,7 +126,7 @@ module gogeo {
       return [
         "people",
         "address",
-        "value",
+        Configuration.getValueField(),
         "typepay",
         "payway",
         "typeestab",
@@ -136,7 +141,7 @@ module gogeo {
     }
   }
 
-  var mod = angular.module("gogeo", ["ngRoute", "ngCookies", "angularytics", "linkify", "ngGeolocation", "nvd3", "angular-capitalize-filter", "angucomplete-alt"])
+  var mod = angular.module("gogeo", ["ngRoute", "ngCookies", "angularytics", "linkify", "ngGeolocation", "nvd3", "angular-capitalize-filter", "angucomplete-alt", "vr.directives.slider"])
     .config([
       "$routeProvider",
       "AngularyticsProvider",

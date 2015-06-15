@@ -14,20 +14,19 @@ module gogeo {
     somethingTerm: string;
     place: string;
     typeEstab: string;
-    startDate: string = "04/20/2015";
-    endDate: string = "05/31/2015";
+    startDate: string = "05/21/2015";
+    endDate: string = "05/30/2015";
     dateFormat: string = "MM/DD/YYYY";
     selected: any = ""
     citiesToSearch: Array<any> = Configuration.getPlacesToSearch();
+    rangeValueMin: number = 0;
+    rangeValueMax: number = 10339;
 
     constructor($scope:     ng.IScope,
           public service: DashboardService) {
       super($scope);
 
       this.initialize();
-
-      this.startDate = "04/21/2015";
-      this.endDate = "05/29/2015";
 
       this.service.dateLimitObservable
         .subscribeAndApply(this.$scope, (result: any) => {
@@ -44,6 +43,10 @@ module gogeo {
 
       this.citiesToSearch = Configuration.getPlacesToSearch();
     }
+
+    formatRangeValue(value) {
+      return numeral(value).format('R$ 0,0[.]00');
+    };
 
     private loadParams(result: any) {
       if (!result || JSON.stringify(result) === JSON.stringify({})) {
@@ -117,6 +120,13 @@ module gogeo {
           }
 
           this.service.updateDateRange(startDate, endDate);
+        });
+
+      Rx.Observable.merge(this.watchAsObservable<string>("rangeValueMin"), this.watchAsObservable<string>("rangeValueMax"))
+        .skip(1)
+        .throttle(400)
+        .subscribe(range => {
+          this.service.updateValueRange(this.rangeValueMin, this.rangeValueMax);
         });
     }
   }

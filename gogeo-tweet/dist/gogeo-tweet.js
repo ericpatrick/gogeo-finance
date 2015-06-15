@@ -69,6 +69,10 @@ var gogeo;
             // TODO: Export this to development/deployment config file
             return "datemmdd";
         };
+        Configuration.getValueField = function () {
+            // TODO: Export this to development/deployment config file
+            return "value";
+        };
         Configuration.getInterval = function () {
             // TODO: Export this to development/deployment config file
             return "day";
@@ -79,7 +83,7 @@ var gogeo;
         };
         Configuration.getAggSummary = function () {
             // TODO: Export this to development/deployment config file
-            return "value";
+            return Configuration.getValueField();
         };
         Configuration.getAggSize = function () {
             // TODO: Export this to development/deployment config file
@@ -87,7 +91,7 @@ var gogeo;
         };
         Configuration.getAggChartField = function () {
             // TODO: Export this to development/deployment config file
-            return "value";
+            return Configuration.getValueField();
         };
         Configuration.getTypePayGroupBy = function () {
             // TODO: Export this to development/deployment config file
@@ -110,7 +114,7 @@ var gogeo;
             return [
                 "people",
                 "address",
-                "value",
+                Configuration.getValueField(),
                 "typepay",
                 "payway",
                 "typeestab",
@@ -126,7 +130,7 @@ var gogeo;
         return Configuration;
     })();
     gogeo.Configuration = Configuration;
-    var mod = angular.module("gogeo", ["ngRoute", "ngCookies", "angularytics", "linkify", "ngGeolocation", "nvd3", "angular-capitalize-filter", "angucomplete-alt"])
+    var mod = angular.module("gogeo", ["ngRoute", "ngCookies", "angularytics", "linkify", "ngGeolocation", "nvd3", "angular-capitalize-filter", "angucomplete-alt", "vr.directives.slider"])
         .config([
         "$routeProvider",
         "AngularyticsProvider",
@@ -295,21 +299,116 @@ var gogeo;
     gogeo.WelcomeController = WelcomeController;
     gogeo.registerController(WelcomeController);
 })(gogeo || (gogeo = {}));
-/**
- * Created by danfma on 07/03/15.
- */
 var gogeo;
 (function (gogeo) {
-    function prefix(eventName) {
-        return "gogeo:" + eventName;
-    }
-    var DashboardEvent = (function () {
-        function DashboardEvent() {
+    var DashboardQuery = (function () {
+        function DashboardQuery($http, geomSpace) {
+            this.$http = $http;
+            this.requestData = {};
+            this.requestData = {
+                agg_size: gogeo.Configuration.getAggSize(),
+                field: gogeo.Configuration.getAggField(),
+                geom: geomSpace,
+                q: {
+                    query: {
+                        bool: {
+                            must: []
+                        }
+                    }
+                }
+            };
         }
-        DashboardEvent.mapLoaded = prefix("dashboard:mapLoaded");
-        return DashboardEvent;
+        DashboardQuery.prototype.getOrCreateAndRestriction = function (filter) {
+            // var and = filter["and"];
+            // if (!and) {
+            //   and = filter.and = {
+            //     filters: []
+            //   };
+            // }
+            // return and;
+        };
+        DashboardQuery.prototype.filterBySearchTerms = function (terms) {
+            // for (var i = 0; i < terms.length; i++) {
+            //   this.filterBySearchTerm(terms[i]);
+            // }
+        };
+        DashboardQuery.prototype.filterBySearchTerm = function (term) {
+            // Enumerable.from(term.split(' '))
+            //   .select(entry => entry.trim())
+            //   .where(entry => entry != null && entry.length > 0)
+            //   .forEach(entry => {
+            //     switch (entry.charAt(0)) {
+            //       case "@":
+            //         this.filterByUsername(entry.substring(1));
+            //         break;
+            //       case "#":
+            //         this.filterByHashtag({
+            //           key: entry.substring(1),
+            //           doc_count: 0
+            //         });
+            //         break;
+            //       default:
+            //         this.filterByText(term);
+            //         break;
+            //     }
+            //   });
+        };
+        DashboardQuery.prototype.filterByHashtag = function (hashtag) {
+            // var filter:any = this.requestData.q.query.filtered.filter;
+            // if (hashtag) {
+            //   this.requestData["field"] = "place.full_name.raw";
+            //   this.requestData["agg_size"] = 5;
+            //   var and = this.getOrCreateAndRestriction(filter);
+            //   var queryString = new TextQueryBuilder(TextQueryBuilder.HashtagText, hashtag.key);
+            //   and.filters.push(queryString.build());
+            // }
+        };
+        DashboardQuery.prototype.filterByUsername = function (username) {
+            // var filter:any = this.requestData.q.query.filtered.filter;
+            // var and = this.getOrCreateAndRestriction(filter);
+            // var queryString = new TextQueryBuilder(TextQueryBuilder.UserScreenName, username + "*");
+            // and.filters.push(queryString.build());
+        };
+        DashboardQuery.prototype.filterByText = function (text) {
+            // var filter:any = this.requestData.q.query.filtered.filter;
+            // var and = this.getOrCreateAndRestriction(filter);
+            // var queryString = new TextQueryBuilder(TextQueryBuilder.Text, text);
+            // and.filters.push(queryString.build());
+        };
+        DashboardQuery.prototype.filterByPlace = function (text) {
+            this.filterByField(text, "city");
+        };
+        DashboardQuery.prototype.filterByTypeEstab = function (text) {
+            this.filterByField(text, "typeestab");
+        };
+        DashboardQuery.prototype.filterByDateRange = function (range) {
+            var must = this.getMust();
+            var dateRangeQuery = new gogeo.DateRangeQueryBuilder(gogeo.DateRangeQueryBuilder.DateRange, range);
+            must.push(dateRangeQuery.build());
+        };
+        DashboardQuery.prototype.filterByValueRange = function (range) {
+            var must = this.getMust();
+            var valueRangeQuery = new gogeo.ValueRangeQueryBuilder(gogeo.ValueRangeQueryBuilder.ValueRange, range);
+            must.push(valueRangeQuery.build());
+        };
+        DashboardQuery.prototype.filterByField = function (text, field) {
+            var must = this.getMust();
+            var placeQueryString = new gogeo.MatchPhraseQuery(text, field);
+            must.push(placeQueryString.build());
+        };
+        DashboardQuery.prototype.getMust = function () {
+            return this.requestData.q.query.bool.must;
+        };
+        DashboardQuery.prototype.execute = function (resultHandler) {
+            var url = gogeo.Configuration.makeUrl("geoagg/" + gogeo.Configuration.getDatabaseName() + "/" + gogeo.Configuration.getCollectionName() + "?mapkey=123");
+            // console.log("this.requestData", JSON.stringify(this.requestData, null, 2));
+            return this.$http
+                .post(url, this.requestData)
+                .success(resultHandler);
+        };
+        return DashboardQuery;
     })();
-    gogeo.DashboardEvent = DashboardEvent;
+    gogeo.DashboardQuery = DashboardQuery;
 })(gogeo || (gogeo = {}));
 ///<reference path="./interfaces.ts" />
 var gogeo;
@@ -426,6 +525,29 @@ var gogeo;
         return DateRangeQueryBuilder;
     })();
     gogeo.DateRangeQueryBuilder = DateRangeQueryBuilder;
+    var ValueRangeQueryBuilder = (function () {
+        function ValueRangeQueryBuilder(field, range) {
+            this.field = field;
+            this.range = range;
+        }
+        ValueRangeQueryBuilder.prototype.build = function () {
+            var query = {
+                range: {}
+            };
+            var fieldRestriction = query.range[this.field] = {};
+            var range = this.range;
+            if (range.min) {
+                fieldRestriction["gte"] = range.min;
+            }
+            if (range.max) {
+                fieldRestriction["lte"] = range.max;
+            }
+            return query;
+        };
+        ValueRangeQueryBuilder.ValueRange = gogeo.Configuration.getValueField();
+        return ValueRangeQueryBuilder;
+    })();
+    gogeo.ValueRangeQueryBuilder = ValueRangeQueryBuilder;
     var SourceTermQuery = (function () {
         function SourceTermQuery(term) {
             this.term = term;
@@ -459,112 +581,6 @@ var gogeo;
         return MatchPhraseQuery;
     })();
     gogeo.MatchPhraseQuery = MatchPhraseQuery;
-})(gogeo || (gogeo = {}));
-var gogeo;
-(function (gogeo) {
-    var DashboardQuery = (function () {
-        function DashboardQuery($http, geomSpace) {
-            this.$http = $http;
-            this.requestData = {};
-            this.requestData = {
-                agg_size: gogeo.Configuration.getAggSize(),
-                field: gogeo.Configuration.getAggField(),
-                geom: geomSpace,
-                q: {
-                    query: {
-                        bool: {
-                            must: []
-                        }
-                    }
-                }
-            };
-        }
-        DashboardQuery.prototype.getOrCreateAndRestriction = function (filter) {
-            // var and = filter["and"];
-            // if (!and) {
-            //   and = filter.and = {
-            //     filters: []
-            //   };
-            // }
-            // return and;
-        };
-        DashboardQuery.prototype.filterBySearchTerms = function (terms) {
-            // for (var i = 0; i < terms.length; i++) {
-            //   this.filterBySearchTerm(terms[i]);
-            // }
-        };
-        DashboardQuery.prototype.filterBySearchTerm = function (term) {
-            // Enumerable.from(term.split(' '))
-            //   .select(entry => entry.trim())
-            //   .where(entry => entry != null && entry.length > 0)
-            //   .forEach(entry => {
-            //     switch (entry.charAt(0)) {
-            //       case "@":
-            //         this.filterByUsername(entry.substring(1));
-            //         break;
-            //       case "#":
-            //         this.filterByHashtag({
-            //           key: entry.substring(1),
-            //           doc_count: 0
-            //         });
-            //         break;
-            //       default:
-            //         this.filterByText(term);
-            //         break;
-            //     }
-            //   });
-        };
-        DashboardQuery.prototype.filterByHashtag = function (hashtag) {
-            // var filter:any = this.requestData.q.query.filtered.filter;
-            // if (hashtag) {
-            //   this.requestData["field"] = "place.full_name.raw";
-            //   this.requestData["agg_size"] = 5;
-            //   var and = this.getOrCreateAndRestriction(filter);
-            //   var queryString = new TextQueryBuilder(TextQueryBuilder.HashtagText, hashtag.key);
-            //   and.filters.push(queryString.build());
-            // }
-        };
-        DashboardQuery.prototype.filterByUsername = function (username) {
-            // var filter:any = this.requestData.q.query.filtered.filter;
-            // var and = this.getOrCreateAndRestriction(filter);
-            // var queryString = new TextQueryBuilder(TextQueryBuilder.UserScreenName, username + "*");
-            // and.filters.push(queryString.build());
-        };
-        DashboardQuery.prototype.filterByText = function (text) {
-            // var filter:any = this.requestData.q.query.filtered.filter;
-            // var and = this.getOrCreateAndRestriction(filter);
-            // var queryString = new TextQueryBuilder(TextQueryBuilder.Text, text);
-            // and.filters.push(queryString.build());
-        };
-        DashboardQuery.prototype.filterByPlace = function (text) {
-            this.filterByField(text, "city");
-        };
-        DashboardQuery.prototype.filterByTypeEstab = function (text) {
-            this.filterByField(text, "typeestab");
-        };
-        DashboardQuery.prototype.filterByDateRange = function (range) {
-            var must = this.getMust();
-            var dateRangeQuery = new gogeo.DateRangeQueryBuilder(gogeo.DateRangeQueryBuilder.DateRange, range);
-            must.push(dateRangeQuery.build());
-        };
-        DashboardQuery.prototype.filterByField = function (text, field) {
-            var must = this.getMust();
-            var placeQueryString = new gogeo.MatchPhraseQuery(text, field);
-            must.push(placeQueryString.build());
-        };
-        DashboardQuery.prototype.getMust = function () {
-            return this.requestData.q.query.bool.must;
-        };
-        DashboardQuery.prototype.execute = function (resultHandler) {
-            var url = gogeo.Configuration.makeUrl("geoagg/" + gogeo.Configuration.getDatabaseName() + "/" + gogeo.Configuration.getCollectionName() + "?mapkey=123");
-            // console.log("this.requestData", JSON.stringify(this.requestData, null, 2));
-            return this.$http
-                .post(url, this.requestData)
-                .success(resultHandler);
-        };
-        return DashboardQuery;
-    })();
-    gogeo.DashboardQuery = DashboardQuery;
 })(gogeo || (gogeo = {}));
 var gogeo;
 (function (gogeo) {
@@ -827,6 +843,7 @@ var gogeo;
             this._lastSomethingTerms = [];
             this._lastPlaceString = null;
             this._lastDateRange = null;
+            this._lastValueRange = null;
             this._lastMapCenter = null;
             this._lastMapZoom = 0;
             this._lastMapType = null;
@@ -866,6 +883,7 @@ var gogeo;
             this._placeObservable = new Rx.BehaviorSubject(null);
             this._hashtagResultObservable = new Rx.BehaviorSubject(null);
             this._dateRangeObservable = new Rx.BehaviorSubject(null);
+            this._valueRangeObservable = new Rx.BehaviorSubject(null);
             this._lastQueryObservable = new Rx.BehaviorSubject(null);
             this._tweetObservable = new Rx.BehaviorSubject(null);
             this._dateLimitObservable = new Rx.BehaviorSubject(null);
@@ -928,6 +946,13 @@ var gogeo;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DashboardService.prototype, "dateValueObsersable", {
+            get: function () {
+                return this._valueRangeObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DashboardService.prototype, "somethingTermsObservable", {
             get: function () {
                 return this._somethingTermsObservable;
@@ -980,7 +1005,7 @@ var gogeo;
         DashboardService.prototype.initialize = function () {
             var _this = this;
             Rx.Observable
-                .merge(this._geomSpaceObservable, this._hashtagFilterObservable, this._dateRangeObservable)
+                .merge(this._geomSpaceObservable, this._hashtagFilterObservable, this._dateRangeObservable, this._valueRangeObservable)
                 .throttle(400)
                 .subscribe(function () { return _this.search(); });
             Rx.Observable
@@ -1157,6 +1182,14 @@ var gogeo;
             this._lastDateRange = dateRange;
             this._dateRangeObservable.onNext(dateRange);
         };
+        DashboardService.prototype.updateValueRange = function (min, max) {
+            var valueRange = null;
+            if (min || max) {
+                valueRange = { min: min, max: max };
+            }
+            this._lastValueRange = valueRange;
+            this._valueRangeObservable.onNext(valueRange);
+        };
         DashboardService.prototype.updateMapCenter = function (mapCenter) {
             this._lastMapCenter = mapCenter;
         };
@@ -1286,9 +1319,13 @@ var gogeo;
             if (this._lastDateRange) {
                 query.filterByDateRange(this._lastDateRange);
             }
+            if (this._lastValueRange) {
+                query.filterByValueRange(this._lastValueRange);
+            }
             if (this._lastTypeEstab) {
                 query.filterByTypeEstab(this._lastTypeEstab);
             }
+            console.log("query", JSON.stringify(query, null, 2));
             return query;
         };
         DashboardService.$named = "dashboardService";
@@ -1303,1169 +1340,6 @@ var gogeo;
     })();
     gogeo.DashboardService = DashboardService;
     gogeo.registerService(DashboardService);
-})(gogeo || (gogeo = {}));
-/// <reference path="../../shell.ts" />
-/// <reference path="../services/dashboard-events.ts" />
-/// <reference path="../services/dashboard-service.ts" />
-var gogeo;
-(function (gogeo) {
-    var DashboardDetailsController = (function () {
-        function DashboardDetailsController($scope, $interval, $filter, service) {
-            this.$scope = $scope;
-            this.$interval = $interval;
-            this.$filter = $filter;
-            this.service = service;
-            this.hashtagResult = null;
-            this.selectedHashtag = null;
-        }
-        DashboardDetailsController.prototype.initialize = function () {
-            var _this = this;
-            this.service.hashtagResultObservable
-                .subscribeAndApply(this.$scope, function (result) { return _this.handleResult(result); });
-        };
-        DashboardDetailsController.prototype.handleResult = function (result) {
-            this.hashtagResult = result;
-            if (this.selectedHashtag) {
-                this.selectedHashtag.doc_count = result.doc_total;
-            }
-        };
-        DashboardDetailsController.prototype.unselect = function () {
-            this.selectedHashtag = null;
-            this.service.updateHashtagBucket(null);
-        };
-        DashboardDetailsController.$inject = [
-            "$scope",
-            "$interval",
-            "$filter",
-            gogeo.DashboardService.$named
-        ];
-        return DashboardDetailsController;
-    })();
-    gogeo.registerDirective("dashboardDetails", function () {
-        return {
-            restrict: "CE",
-            templateUrl: "dashboard/controls/dashboard-details-template.html",
-            controller: DashboardDetailsController,
-            controllerAs: "details",
-            bindToController: true,
-            scope: true,
-            link: function (scope, element, attrs, controller) {
-                controller.initialize();
-            }
-        };
-    });
-})(gogeo || (gogeo = {}));
-/// <reference path="../../shell.ts" />
-/// <reference path="../services/dashboard-events.ts" />
-/// <reference path="../services/dashboard-service.ts" />
-/**
- * Created by danfma on 06/03/15.
- */
-var gogeo;
-(function (gogeo) {
-    var DashboardHashtagsController = (function () {
-        function DashboardHashtagsController($scope, service) {
-            var _this = this;
-            this.$scope = $scope;
-            this.service = service;
-            this.buckets = [];
-            this.selectedHashtag = null;
-            this.message = null;
-            this.message = "Top 10 hashtags";
-            this.service.hashtagResultObservable
-                .subscribeAndApply(this.$scope, function (result) {
-                if (result && result["buckets_qtd"] == 10) {
-                    _this.message = "Top 10 hashtags";
-                }
-            });
-        }
-        DashboardHashtagsController.prototype.hasSelected = function () {
-            return this.selectedHashtag != null;
-        };
-        DashboardHashtagsController.prototype.selectHashtag = function (bucket) {
-            this.message = "Top 5 places for this hashtag";
-            this.selectedHashtag = bucket;
-            this.service.updateHashtagBucket(bucket);
-        };
-        DashboardHashtagsController.$inject = [
-            "$scope",
-            gogeo.DashboardService.$named
-        ];
-        return DashboardHashtagsController;
-    })();
-    gogeo.DashboardHashtagsController = DashboardHashtagsController;
-    gogeo.registerDirective("dashboardHashtags", function () {
-        return {
-            restrict: "E",
-            templateUrl: "dashboard/controls/dashboard-hashtags-template.html",
-            controller: DashboardHashtagsController,
-            controllerAs: "hashtags",
-            bindToController: true,
-            scope: {
-                buckets: "=",
-                selectedHashtag: "="
-            },
-            link: function (scope, element, attrs, controller) {
-            }
-        };
-    });
-})(gogeo || (gogeo = {}));
-/// <reference path="../../shell.ts" />
-/// <reference path="../../shared/abstract-controller.ts" />
-/// <reference path="../services/dashboard-events.ts" />
-/// <reference path="../services/dashboard-service.ts" />
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-var gogeo;
-(function (gogeo) {
-    var DashboardController = (function (_super) {
-        __extends(DashboardController, _super);
-        function DashboardController($scope, service) {
-            var _this = this;
-            _super.call(this, $scope);
-            this.service = service;
-            this.startDate = "04/20/2015";
-            this.endDate = "05/31/2015";
-            this.dateFormat = "MM/DD/YYYY";
-            this.selected = "";
-            this.citiesToSearch = gogeo.Configuration.getPlacesToSearch();
-            this.initialize();
-            this.startDate = "04/21/2015";
-            this.endDate = "05/29/2015";
-            this.service.dateLimitObservable
-                .subscribeAndApply(this.$scope, function (result) {
-                if (result) {
-                    _this.startDate = moment(new Date(result["max"])).subtract(15, "days").format("MM/DD/YYYY");
-                    _this.endDate = moment(new Date(result["max"])).format("MM/DD/YYYY");
-                }
-            });
-            this.service.loadParamsObservable
-                .subscribeAndApply(this.$scope, function (result) {
-                _this.loadParams(result);
-            });
-            this.citiesToSearch = gogeo.Configuration.getPlacesToSearch();
-        }
-        DashboardController.prototype.loadParams = function (result) {
-            if (!result || JSON.stringify(result) === JSON.stringify({})) {
-                return;
-            }
-            var what = result["what"];
-            if (what) {
-                this.somethingTerm = what;
-                this.service.updateSomethingTerms([this.somethingTerm]);
-            }
-            var where = result["where"];
-            if (where) {
-                this.place = where;
-                this.service.updatePlace(this.place);
-            }
-            var startDate = result["startDate"];
-            var endDate = result["endDate"];
-            if (startDate || endDate) {
-                if (startDate) {
-                    this.startDate = startDate;
-                }
-                if (endDate) {
-                    this.endDate = endDate;
-                }
-                this.service.updateDateRange(new Date(Date.parse(this.startDate)), new Date(Date.parse(this.endDate)));
-            }
-        };
-        DashboardController.prototype.initialize = function () {
-            var _this = this;
-            _super.prototype.initialize.call(this);
-            this.watchAsObservable("somethingTerm")
-                .skip(1)
-                .throttle(800)
-                .select(function (term) {
-                return Enumerable
-                    .from(term.split(" "))
-                    .select(function (part) { return part.trim(); })
-                    .toArray();
-            })
-                .subscribe(function (terms) { return _this.service.updateSomethingTerms(terms); });
-            this.watchAsObservable("place")
-                .skip(1)
-                .throttle(800)
-                .subscribe(function (place) { return _this.service.updatePlace(place); });
-            this.watchAsObservable("typeEstab")
-                .skip(1)
-                .throttle(800)
-                .subscribe(function (typeEstab) { return _this.service.updateTypeEstab(typeEstab); });
-            Rx.Observable.merge(this.watchAsObservable("startDate"), this.watchAsObservable("endDate"))
-                .skip(1)
-                .throttle(400)
-                .subscribe(function (range) {
-                var startDate = null;
-                var endDate = null;
-                if (_this.startDate) {
-                    startDate = new Date(Date.parse(_this.startDate));
-                }
-                if (_this.endDate) {
-                    endDate = new Date(Date.parse(_this.endDate));
-                }
-                _this.service.updateDateRange(startDate, endDate);
-            });
-        };
-        DashboardController.$inject = [
-            "$scope",
-            gogeo.DashboardService.$named
-        ];
-        return DashboardController;
-    })(gogeo.AbstractController);
-    gogeo.registerDirective("dashboardHeader", function () {
-        return {
-            restrict: "C",
-            templateUrl: "dashboard/controls/dashboard-header-template.html",
-            controller: DashboardController,
-            controllerAs: "header",
-            bindToController: true,
-            scope: true
-        };
-    });
-})(gogeo || (gogeo = {}));
-/// <reference path="../../shell.ts" />
-/// <reference path="../services/dashboard-events.ts" />
-/// <reference path="../services/dashboard-service.ts" />
-/// <reference path="../services/metrics.ts" />
-/**
- * Created by danfma on 07/03/15.
- */
-var gogeo;
-(function (gogeo) {
-    var DashboardMapController = (function () {
-        function DashboardMapController($scope, $cookies, $timeout, $location, linkify, $sce, $geo, service, metrics) {
-            this.$scope = $scope;
-            this.$cookies = $cookies;
-            this.$timeout = $timeout;
-            this.$location = $location;
-            this.linkify = linkify;
-            this.$sce = $sce;
-            this.$geo = $geo;
-            this.service = service;
-            this.metrics = metrics;
-            this.query = { query: { filtered: { filter: {} } } };
-            this.selected = "inactive";
-            this.mapTypes = ["point", "cluster", "intensity", "thematic"];
-            this.mapSelected = "point";
-            this.drawing = false;
-            this.baseLayers = null;
-            this.layerGroup = null;
-            this.drawnItems = null;
-            this.drawnGeom = null;
-            this.restricted = false;
-            this.canOpenPopup = true;
-            this.thematicMaps = {};
-            this.baseLayerSelected = "day";
-            this.levent = null;
-            this.thematicSelectedLayers = [
-                "restaurantes", "informatica", "alimentos", "construcao", "farmaceutico", "combustiveis", "hoteis"
-            ];
-            // queries: any = {
-            //     android: '<a href="http://twitter.com/download/android" rel="nofollow">Twitter for Android</a>',
-            //     iphone: '<a href="http://twitter.com/download/iphone" rel="nofollow">Twitter for iPhone</a>',
-            //     web: '<a href="http://twitter.com" rel="nofollow">Twitter Web Client</a>',
-            //     instagram: '<a href="http://instagram.com" rel="nofollow">Instagram</a>',
-            //     foursquare: '<a href="http://foursquare.com" rel="nofollow">Foursquare</a>',
-            //     others: ''
-            // }
-            this.queries = {
-                restaurantes: "Restaurantes e outros serviços de alimentação e bebidas",
-                informatica: "Comércio varejista de equipamentos de informática e comunicação",
-                alimentos: "Comércio varejista de produtos alimentícios, bebidas e fumo",
-                construcao: "Comércio varejista de material de construção",
-                farmaceutico: "Comércio varejista de produtos farmacêuticos, perfumaria e cosméticos e artigos médicos, ópticos e ortopédicos",
-                combustiveis: "Comércio varejista de combustíveis para veículos automotores",
-                hoteis: "Hotéis e similares",
-            };
-            this._thematicLayers = new Rx.BehaviorSubject(this.thematicSelectedLayers);
-            this._selectedMap = new Rx.BehaviorSubject(null);
-            this.layerGroup = L.layerGroup([]);
-            this.baseLayers = L.featureGroup([]);
-        }
-        Object.defineProperty(DashboardMapController.prototype, "thematicLayers", {
-            get: function () {
-                return this._thematicLayers;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        DashboardMapController.prototype.initialize = function (map) {
-            var _this = this;
-            this.map = map;
-            this.baseLayers.addLayer(this.getDayMap());
-            this.map.addLayer(this.baseLayers);
-            this.map.on("moveend", function (e) { return _this.onMapLoaded(); });
-            this.map.on("click", function (e) { return _this.openPopup(e); });
-            this.map.on("draw:created", function (e) { return _this.drawnHandler(e); });
-            this.map.on("draw:deleted", function (e) { return _this.drawnHandler(e); });
-            this.map.on("draw:edited", function (e) { return _this.drawnHandler(e); });
-            this.map.on("draw:editstart", function (e) { return _this.blockPopup(); });
-            this.map.on("draw:editstop", function (e) { return _this.allowPopup(); });
-            this.map.on("draw:deletestart", function (e) { return _this.blockPopup(); });
-            this.map.on("draw:deletestop", function (e) { return _this.allowPopup(); });
-            this.initializeLayer();
-            this.drawnItems = new L.FeatureGroup();
-            this.map.addLayer(this.drawnItems);
-            this.initializeDrawControl();
-            this.service.geomSpaceObservable
-                .subscribeAndApply(this.$scope, function (geom) { return _this.handleGeom(geom); });
-            this.service.placeBoundObservable
-                .where(function (point) { return point != null; })
-                .subscribeAndApply(this.$scope, function (point) { return _this.fitMap(point); });
-            this.service.loadParamsObservable
-                .subscribeAndApply(this.$scope, function (result) {
-                _this.loadParams(result);
-            });
-            Rx.Observable
-                .merge(this._thematicLayers)
-                .throttle(800)
-                .subscribe(function () {
-                _this.metrics.publishThematicMetric(_this.thematicSelectedLayers);
-            });
-            Rx.Observable
-                .merge(this._selectedMap)
-                .throttle(800)
-                .subscribe(function () {
-                _this.service.updateMapType(_this.mapSelected);
-                _this.metrics.publishMapTypeMetric(_this.mapSelected);
-            });
-            if (!this.$location.search()["center"] && !this.$location.search()["zoom"]) {
-                var shareLocation = (this.$cookies["gogeo.shareLocation"] === "true");
-                if (this.$cookies["gogeo.firstLoad"] == undefined || shareLocation) {
-                    this.$cookies["gogeo.firstLoad"] = false;
-                    if (!shareLocation) {
-                        this.$cookies["gogeo.shareLocation"] = false;
-                    }
-                    this.setGeoLocation();
-                }
-            }
-        };
-        DashboardMapController.prototype.loadParams = function (result) {
-            if (!result || JSON.stringify(result) === JSON.stringify({})) {
-                return;
-            }
-            var zoom = parseInt(result["zoom"]);
-            if (zoom) {
-                this.map.setZoom(zoom);
-            }
-            var centerString = result["center"];
-            if (centerString) {
-                centerString = centerString.split(",");
-                if (centerString.length != 2) {
-                    // Compatibility with previous version
-                    centerString = centerString.split(";");
-                }
-                var lat = parseFloat(centerString[0]);
-                var lng = parseFloat(centerString[1]);
-                var center = new L.LatLng(lat, lng);
-                this.map.setView(center);
-            }
-            var mapType = result["type"];
-            if (mapType && this.mapTypes.indexOf(mapType) != (-1)) {
-                this.mapSelected = mapType;
-            }
-            var baseLayer = result["baseLayer"];
-            if (baseLayer === "night") {
-                this.switchBaseLayer();
-            }
-        };
-        DashboardMapController.prototype.fitMap = function (point) {
-            this.map.setView(point, 12);
-        };
-        DashboardMapController.prototype.initializeLayer = function () {
-            var _this = this;
-            this.map.addLayer(this.layerGroup);
-            var layers = this.createLayers();
-            for (var i in layers) {
-                this.layerGroup.addLayer(layers[i]);
-            }
-            this.service.queryObservable
-                .where(function (q) { return q != null; })
-                .throttle(400)
-                .subscribeAndApply(this.$scope, function (query) { return _this.queryHandler(query); });
-            this.service.tweetObservable
-                .subscribeAndApply(this.$scope, function (tweet) { return _this.handlePopupResult(tweet); });
-        };
-        DashboardMapController.prototype.setGeoLocation = function () {
-            var _this = this;
-            var shareLocation = (this.$cookies["gogeo.shareLocation"] === "true");
-            if (shareLocation) {
-                var latitude = this.$cookies["gogeo.location.lat"];
-                var longitude = this.$cookies["gogeo.location.lng"];
-                this.centerMap(latitude, longitude);
-            }
-            else {
-                this.$geo.getCurrentPosition().then(function (location) {
-                    var coords = location.coords;
-                    _this.centerMap(coords.latitude, coords.longitude);
-                    _this.$cookies["gogeo.shareLocation"] = "true";
-                    _this.$cookies["gogeo.location.lat"] = coords.latitude;
-                    _this.$cookies["gogeo.location.lng"] = coords.longitude;
-                });
-            }
-        };
-        DashboardMapController.prototype.centerMap = function (lat, lng) {
-            if (lat && lng) {
-                var center = new L.LatLng(lat, lng);
-                this.map.setView(center, 12);
-            }
-        };
-        DashboardMapController.prototype.getNightMap = function () {
-            var mapOptions = {
-                // How you would like to style the map. 
-                // This is where you would paste any style found on Snazzy Maps.
-                styles: [
-                    { "stylers": [{ "visibility": "simplified" }] },
-                    { "stylers": [{ "color": "#131314" }] },
-                    {
-                        "featureType": "water",
-                        "stylers": [{ "color": "#131313" }, { "lightness": 7 }]
-                    },
-                    {
-                        "elementType": "labels.text.fill",
-                        "stylers": [{ "visibility": "on" }, { "lightness": 25 }]
-                    }
-                ]
-            };
-            var options = {
-                mapOptions: mapOptions,
-                maptiks_id: "night-map"
-            };
-            return new L.Google("ROADMAP", options);
-        };
-        DashboardMapController.prototype.getDayMap = function () {
-            return new L.Google('ROADMAP', { maptiks_id: "day-map" });
-        };
-        DashboardMapController.prototype.blockPopup = function () {
-            this.canOpenPopup = false;
-        };
-        DashboardMapController.prototype.allowPopup = function () {
-            this.canOpenPopup = true;
-        };
-        DashboardMapController.prototype.handleGeom = function (geom) {
-        };
-        DashboardMapController.prototype.initializeDrawControl = function () {
-            var drawOptions = {
-                draw: {
-                    polyline: false,
-                    polygon: false,
-                    circle: false,
-                    marker: false,
-                    rectangle: {
-                        showArea: true,
-                        shapeOptions: {
-                            color: "blue"
-                        }
-                    }
-                },
-                edit: {
-                    featureGroup: this.drawnItems
-                },
-                trash: true
-            };
-            var drawControl = new L.Control.Draw(drawOptions);
-            this.map.addControl(drawControl);
-        };
-        DashboardMapController.prototype.queryHandler = function (query) {
-            if (JSON.stringify(query) !== JSON.stringify(this.query)) {
-                this.query = query;
-                this.updateLayer();
-            }
-            else {
-            }
-        };
-        DashboardMapController.prototype.drawnHandler = function (event) {
-            var _this = this;
-            var layerType = event["layerType"];
-            var eventType = event["type"];
-            var layer = event["layer"];
-            if (!layer) {
-                layer = this.drawnItems.getLayers()[0];
-            }
-            this.drawnItems.clearLayers();
-            if (layer) {
-                this.restricted = false;
-                var geojson = layer.toGeoJSON();
-                this.drawnItems.addLayer(layer);
-                this.onMapLoaded(this.getDrawGeomSpace(geojson["geometry"]));
-                layer.on("click", function (e) { return _this.openPopup(e); });
-            }
-            else {
-                this.restricted = false;
-                this.drawnGeom = null;
-                this.updateLayer();
-                this.onMapLoaded();
-            }
-        };
-        DashboardMapController.prototype.getDrawGeomSpace = function (geojson) {
-            return {
-                source: "draw",
-                type: geojson["type"],
-                coordinates: geojson["coordinates"]
-            };
-        };
-        DashboardMapController.prototype.createLayers = function () {
-            var url = this.configureUrl();
-            var options = {
-                subdomains: gogeo.Configuration.subdomains,
-                maptiks_id: this.mapSelected
-            };
-            if (["point", "intensity"].indexOf(this.mapSelected) != (-1)) {
-                return [L.tileLayer(url, options)];
-            }
-            else if (this.mapSelected === "thematic") {
-                return this.createThematicLayers(url, options);
-            }
-            else if (this.mapSelected === 'cluster') {
-                return [this.createClusterLayer(url)];
-            }
-        };
-        DashboardMapController.prototype.configureUrl = function () {
-            var database = gogeo.Configuration.getDatabaseName();
-            var collection = gogeo.Configuration.getCollectionName();
-            var buffer = 8;
-            var stylename = "gogeo_many_points";
-            var serviceName = "tile.png";
-            if (this.mapSelected === "cluster") {
-                serviceName = "cluster.json";
-            }
-            if (this.mapSelected === "thematic") {
-                stylename = "restaurantes_1";
-            }
-            if (this.mapSelected === "intensity") {
-                stylename = "gogeo_intensity";
-            }
-            var url = "/map/"
-                + database + "/" +
-                collection + "/{z}/{x}/{y}/"
-                + serviceName + "?buffer=" + buffer +
-                "&stylename=" + stylename + "&mapkey=123";
-            if (this.query) {
-                url = url + "&q=" + encodeURIComponent(angular.toJson(this.query));
-            }
-            if (this.drawnGeom) {
-                url = url + "&geom=" + angular.toJson(this.drawnGeom);
-            }
-            return gogeo.Configuration.makeUrl(url);
-        };
-        DashboardMapController.prototype.createThematicLayers = function (url, options) {
-            var array = [];
-            var layer = null;
-            url = this.configureThematicUrl("restaurantes", "restaurantes_1");
-            layer = L.tileLayer(url, options);
-            this.thematicMaps["restaurantes"] = layer;
-            array.push(layer);
-            url = this.configureThematicUrl("informatica", "informatica_1");
-            layer = L.tileLayer(url, options);
-            this.thematicMaps["informatica"] = layer;
-            array.push(layer);
-            url = this.configureThematicUrl("alimentos", "alimentos_1");
-            layer = L.tileLayer(url, options);
-            this.thematicMaps["alimentos"] = layer;
-            array.push(layer);
-            url = this.configureThematicUrl("construcao", "construcao_1");
-            layer = L.tileLayer(url, options);
-            this.thematicMaps["construcao"] = layer;
-            array.push(layer);
-            url = this.configureThematicUrl("farmaceutico", "farmaceutico_1");
-            layer = L.tileLayer(url, options);
-            this.thematicMaps["farmaceutico"] = layer;
-            array.push(layer);
-            url = this.configureThematicUrl("combustiveis", "combustiveis_1");
-            layer = L.tileLayer(url, options);
-            this.thematicMaps["combustiveis"] = layer;
-            array.push(layer);
-            url = this.configureThematicUrl("hoteis", "hoteis_1");
-            layer = L.tileLayer(url, options);
-            this.thematicMaps["hoteis"] = layer;
-            array.push(layer);
-            return array;
-        };
-        DashboardMapController.prototype.configureThematicUrl = function (term, stylename) {
-            var originalQuery = this.query;
-            if (term === 'others') {
-                var thematicQuery = this.createThematicOthersQuery(this.query);
-                this.query = thematicQuery.build();
-            }
-            else {
-                var sourceTermQuery = new gogeo.SourceTermQuery(this.queries[term]);
-                var thematicQuery = new gogeo.ThematicQuery([sourceTermQuery], this.query);
-                this.query = thematicQuery.build();
-            }
-            ;
-            var url = this.configureUrl();
-            url = url.replace("restaurantes_1", stylename);
-            this.query = originalQuery;
-            return url;
-        };
-        DashboardMapController.prototype.createThematicOthersQuery = function (query) {
-            var q1 = new gogeo.TextQueryBuilder(["source"], "*ipad*");
-            var q2 = new gogeo.TextQueryBuilder(["source"], "*windows*");
-            var q3 = new gogeo.TextQueryBuilder(["source"], "*jobs*");
-            var q4 = new gogeo.TextQueryBuilder(["source"], "*mac*");
-            var tq = null;
-            if (query) {
-                tq = new gogeo.ThematicQuery([q1, q2, q3, q4], query);
-            }
-            else {
-                tq = new gogeo.ThematicQuery([q1, q2, q3, q4]);
-            }
-            return tq;
-        };
-        DashboardMapController.prototype.switchBaseLayer = function () {
-            this.baseLayers.clearLayers();
-            if (this.baseLayerSelected === "day") {
-                this.baseLayerSelected = "night";
-                this.baseLayers.addLayer(this.getNightMap());
-            }
-            else {
-                this.baseLayerSelected = "day";
-                this.baseLayers.addLayer(this.getDayMap());
-            }
-            this.service.updateMapBase(this.baseLayerSelected);
-            this.metrics.publishSwitchBaseLayer(this.baseLayerSelected);
-            this.baseLayers.bringToBack();
-        };
-        DashboardMapController.prototype.formatTweetText = function (text) {
-            return this.$sce.trustAsHtml(this.linkify.twitter(text));
-        };
-        DashboardMapController.prototype.formatDate = function (dateString) {
-            var date = new Date(dateString);
-            return moment(date).utc().format("LLLL");
-        };
-        DashboardMapController.prototype.toggleThematicMap = function (id, layer) {
-            if (this.layerGroup.hasLayer(layer)) {
-                this.layerGroup.removeLayer(layer);
-                this.thematicSelectedLayers.splice(this.thematicSelectedLayers.indexOf(id), 1);
-            }
-            else {
-                this.layerGroup.addLayer(layer);
-                this.thematicSelectedLayers.splice(0, 0, id);
-            }
-            this._thematicLayers.onNext(this.thematicSelectedLayers);
-        };
-        DashboardMapController.prototype.onMapLoaded = function (geom) {
-            this.service.updateMapZoom(this.map.getZoom());
-            this.service.updateMapCenter(this.map.getCenter());
-            if (this.restricted) {
-                return;
-            }
-            if (geom) {
-                this.service.updateGeomSpace(geom);
-                this.restricted = true;
-                this.drawnGeom = geom;
-                this.updateLayer();
-            }
-            else {
-                this.service.updateGeomSpaceByBounds(this.map.getBounds());
-            }
-        };
-        DashboardMapController.prototype.hidePopup = function () {
-            this.map.closePopup(this.popup);
-            this.tweetResult = null;
-        };
-        DashboardMapController.prototype.formatPictureUrl = function (url) {
-            if (!url) {
-                return url;
-            }
-            var url = url.replace("_normal", "");
-            return url;
-        };
-        DashboardMapController.prototype.formatTweetUrl = function () {
-            if (this.tweetResult) {
-                var url = "https://twitter.com/";
-                url = url + this.tweetResult["user.screen_name"] + "/";
-                url = url + "status/";
-                url = url + this.tweetResult["id"];
-                return url;
-            }
-        };
-        DashboardMapController.prototype.openPopup = function (levent) {
-            var zoom = this.map.getZoom();
-            var intersects = true;
-            if (!this.canOpenPopup) {
-                return;
-            }
-            if (this.drawnItems.getLayers().length > 0) {
-                var layer = this.drawnItems.getLayers()[0];
-                var bounds = layer.getBounds();
-                var point = levent.latlng;
-                intersects = bounds.contains(point);
-            }
-            if ((this.mapSelected === "point" || this.mapSelected === "thematic") && intersects) {
-                var queries = [];
-                for (var index in this.thematicMaps) {
-                    var thematicLayer = this.thematicMaps[index];
-                    if (this.layerGroup.hasLayer(thematicLayer)) {
-                        var query = null;
-                        if (index === 'others') {
-                            query = this.createThematicOthersQuery().build();
-                        }
-                        else {
-                            query = new gogeo.SourceTermQuery(this.queries[index]);
-                        }
-                        queries.push(query);
-                    }
-                }
-                var thematicQuery = new gogeo.ThematicQuery(queries, this.query);
-                this.service.getTransaction(levent.latlng, zoom, thematicQuery);
-                this.levent = levent;
-            }
-        };
-        DashboardMapController.prototype.handlePopupResult = function (result) {
-            if (!result || result.length == 0) {
-                return;
-            }
-            this.tweetResult = result[0];
-            if (!this.tweetResult) {
-                return;
-            }
-            if (this.popup == null) {
-                var options = {
-                    closeButton: false,
-                    className: "marker-popup",
-                    offset: new L.Point(-203, -368)
-                };
-                this.popup = L.popup(options);
-                this.popup.setContent($("#tweet-popup")[0]);
-            }
-            else {
-                this.popup.setContent($("#tweet-popup")[0]);
-                this.popup.update();
-            }
-            this.popup.setLatLng(this.levent.latlng);
-            this.map.openPopup(this.popup);
-        };
-        DashboardMapController.prototype.changeMapType = function (element) {
-            this.mapSelected = element.target.id;
-            this._selectedMap.onNext(this.mapSelected);
-            if ((this.mapSelected === "thematic" || this.mapSelected === "intensity")
-                && this.baseLayerSelected === "day") {
-                this.switchBaseLayer();
-            }
-            if (this.mapSelected === "point" && this.baseLayerSelected === "night") {
-                this.switchBaseLayer();
-            }
-            this.updateLayer();
-        };
-        DashboardMapController.prototype.updateLayer = function () {
-            this.layerGroup.clearLayers();
-            var layers = this.createLayers();
-            for (var i in layers) {
-                this.layerGroup.addLayer(layers[i]);
-            }
-        };
-        DashboardMapController.prototype.createClusterLayer = function (url) {
-            var options = {
-                subdomains: gogeo.Configuration.subdomains,
-                useJsonP: false
-            };
-            return new L.TileCluster(url, options);
-        };
-        DashboardMapController.$inject = [
-            "$scope",
-            "$cookies",
-            "$timeout",
-            "$location",
-            "linkify",
-            "$sce",
-            "$geolocation",
-            gogeo.DashboardService.$named,
-            gogeo.MetricsService.$named
-        ];
-        return DashboardMapController;
-    })();
-    gogeo.registerDirective("dashboardMap", [
-        "$timeout",
-        function ($timeout) {
-            return {
-                restrict: "C",
-                templateUrl: "dashboard/controls/dashboard-map-template.html",
-                controller: DashboardMapController,
-                controllerAs: "map",
-                bindToController: true,
-                link: function (scope, element, attrs, controller) {
-                    var options = {
-                        attributionControl: false,
-                        minZoom: 4,
-                        maxZoom: 18,
-                        center: new L.LatLng(37.757836, -122.447041),
-                        zoom: 6,
-                        maptiks_id: "leaflet-map"
-                    };
-                    var mapContainerElement = element.find(".dashboard-map-container")[0];
-                    var map = L.map("map-container", options);
-                    controller.initialize(map);
-                    $timeout(function () { return map.invalidateSize(false); }, 1);
-                    scope.$on("$destroy", function () {
-                        map.remove();
-                    });
-                }
-            };
-        }
-    ]);
-    gogeo.registerDirective("errSrc", function () {
-        return {
-            link: function (scope, element, attrs) {
-                element.bind("error", function () {
-                    if (attrs.src != attrs.errSrc) {
-                        attrs.$set("src", attrs.errSrc);
-                    }
-                });
-            }
-        };
-    });
-})(gogeo || (gogeo = {}));
-/// <reference path="../../shell.ts" />
-var gogeo;
-(function (gogeo) {
-    gogeo.registerDirective("dashboardPanel", function () {
-        return {
-            restrict: "C",
-            link: function (scope, element, attributes) {
-                function adjustSizes() {
-                    var body = $(document.body);
-                    var size = {
-                        width: body.innerWidth(),
-                        height: body.innerHeight()
-                    };
-                    var $top = element.find(".dashboard-top-panel");
-                    var $center = element.find(".dashboard-center-panel");
-                    $top.height($top.attr("data-height") + "px");
-                    $center.height(size.height - $top.height());
-                }
-                $(window).on("resize", adjustSizes);
-                adjustSizes(); // forcing the first resize
-                scope.$on("destroy", function () {
-                    $(window).off("resize", adjustSizes);
-                });
-            }
-        };
-    });
-})(gogeo || (gogeo = {}));
-/// <reference path="../../shell.ts" />
-/// <reference path="../../shell.ts" />
-var gogeo;
-(function (gogeo) {
-    var DateHistogramChartController = (function () {
-        function DateHistogramChartController($scope, $timeout, service) {
-            var _this = this;
-            this.$scope = $scope;
-            this.$timeout = $timeout;
-            this.service = service;
-            this.SIMPLE_DATE_PATTERN = "YYYY-MM-dd";
-            // buckets: Array<IDateHistogram> = [];
-            this.buckets = [];
-            this.options = {
-                chart: {
-                    type: 'multiChart',
-                    height: 330,
-                    width: 400,
-                    color: [
-                        "#1f77b4",
-                        "#2ca02c"
-                    ],
-                    margin: {
-                        top: 20,
-                        right: 20,
-                        bottom: 40,
-                        left: 100
-                    },
-                    showValues: true,
-                    transitionDuration: 500,
-                    xAxis: {
-                        axisLabel: "Tempo",
-                        tickFormat: function (d) {
-                            return moment(new Date(d)).format("DD/MM/YYYY");
-                        },
-                        showMaxMin: true,
-                        rotateLabels: 50,
-                        axisLabelDistance: 10
-                    },
-                    yAxis1: {
-                        axisLabel: "Quantidade (k)",
-                        tickFormat: function (d) {
-                            return (d / 1000).toFixed(2);
-                        },
-                        axisLabelDistance: 30
-                    },
-                    yAxis2: {
-                        axisLabel: "Valor (k)",
-                        tickFormat: function (d) {
-                            return (d / 1000).toFixed(2);
-                        },
-                        axisLabelDistance: 30,
-                        width: 90,
-                        margin: {
-                            right: 70
-                        }
-                    }
-                },
-                title: {
-                    enable: true,
-                    text: "TRANSAÇÕES/PERÍODO",
-                    class: "h4",
-                    css: {
-                        // width: "500px",
-                        // padding: "500px",
-                        textAlign: "left",
-                        position: "relative",
-                        top: "20px"
-                    }
-                }
-            };
-            this.service.queryObservable
-                .where(function (q) { return q != null; })
-                .throttle(400)
-                .subscribeAndApply(this.$scope, function (query) { return _this.getDataChart(); });
-            this.buckets = [
-                {
-                    key: "Quantidade",
-                    type: "line",
-                    yAxis: 1,
-                    values: []
-                },
-                {
-                    key: "R$",
-                    type: "line",
-                    yAxis: 2,
-                    values: []
-                }
-            ];
-        }
-        DateHistogramChartController.prototype.getDataChart = function () {
-            var _this = this;
-            this.service.getDateHistogramAggregation().success(function (result) {
-                var quantityValues = [];
-                var amountValues = [];
-                _this.buckets[0]["values"] = [];
-                _this.buckets[1]["values"] = [];
-                result.forEach(function (item) {
-                    quantityValues.push({
-                        x: item['timestamp'] + (3 * 3600 * 1000),
-                        y: item['count']
-                    });
-                    amountValues.push({
-                        x: item['timestamp'] + (3 * 3600 * 1000),
-                        y: item['sum']
-                    });
-                });
-                _this.buckets[0]["values"] = quantityValues;
-                _this.buckets[1]["values"] = amountValues;
-            });
-        };
-        DateHistogramChartController.$inject = [
-            "$scope",
-            "$timeout",
-            gogeo.DashboardService.$named
-        ];
-        return DateHistogramChartController;
-    })();
-    gogeo.DateHistogramChartController = DateHistogramChartController;
-    gogeo.registerDirective("dateHistogramChart", function () {
-        return {
-            restrict: "E",
-            templateUrl: "dashboard/controls/date-histogram-chart-template.html",
-            controller: DateHistogramChartController,
-            controllerAs: "datehisto",
-            bindToController: true,
-            scope: {
-                buckets: "="
-            },
-            link: function (scope, element, attrs, controller) {
-            }
-        };
-    });
-})(gogeo || (gogeo = {}));
-/// <reference path="../../shell.ts" />
-var gogeo;
-(function (gogeo) {
-    var SummaryController = (function () {
-        function SummaryController($scope, $timeout, service) {
-            var _this = this;
-            this.$scope = $scope;
-            this.$timeout = $timeout;
-            this.service = service;
-            this.morning = 0;
-            this.afternoon = 0;
-            this.night = 0;
-            this.service.queryObservable
-                .where(function (q) { return q != null; })
-                .throttle(400)
-                .subscribeAndApply(this.$scope, function (query) { return _this.getSummary(); });
-        }
-        SummaryController.prototype.getSummary = function () {
-            var _this = this;
-            this.service.getStatsAggregationSummary().success(function (result) {
-                // var colors = [ "#053061", "#2166AC", "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
-                result.forEach(function (item) {
-                    if (item["key"] == "tarde") {
-                        _this.afternoon = item["sum"];
-                    }
-                    if (item["key"] == "noite") {
-                        _this.night = item["sum"];
-                    }
-                    else {
-                        _this.morning = item["sum"];
-                    }
-                });
-            });
-        };
-        SummaryController.$inject = [
-            "$scope",
-            "$timeout",
-            gogeo.DashboardService.$named
-        ];
-        return SummaryController;
-    })();
-    gogeo.SummaryController = SummaryController;
-    gogeo.registerDirective("summary", function () {
-        return {
-            restrict: "E",
-            templateUrl: "dashboard/controls/summary-template.html",
-            controller: SummaryController,
-            controllerAs: "summary",
-            bindToController: true,
-            scope: {
-                buckets: "="
-            },
-            link: function (scope, element, attrs, controller) {
-            }
-        };
-    });
-})(gogeo || (gogeo = {}));
-/// <reference path="../../shell.ts" />
-var gogeo;
-(function (gogeo) {
-    var TransactionsChartController = (function () {
-        function TransactionsChartController($scope, $timeout, service) {
-            var _this = this;
-            this.$scope = $scope;
-            this.$timeout = $timeout;
-            this.service = service;
-            this.buckets = [];
-            this.typeEstabBuckets = [];
-            this.options = {};
-            this.typeEstabOptions = {};
-            angular.element(document).ready(function () {
-                _this.getDataChart();
-            });
-            this.service.queryObservable
-                .where(function (q) { return q != null; })
-                .throttle(400)
-                .subscribeAndApply(this.$scope, function (query) { return _this.getDataChart(); });
-        }
-        TransactionsChartController.prototype.getDataChart = function () {
-            var _this = this;
-            this.configureChartOptions();
-            this.service.getStatsAggregationTypePay().success(function (result) {
-                _this.buckets = [];
-                // var colors = [ "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
-                result.forEach(function (item) {
-                    // console.log("********", item);
-                    _this.buckets.push({
-                        x: item['key'].toUpperCase(),
-                        y: item['sum']
-                    });
-                });
-            });
-            this.service.getStatsAggregationTypeEstab().success(function (result) {
-                _this.typeEstabBuckets = [];
-                // var colors = [ "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
-                result.forEach(function (item) {
-                    // console.log("********", item);
-                    _this.typeEstabBuckets.push({
-                        x: item['key'],
-                        y: item['sum']
-                    });
-                });
-            });
-        };
-        TransactionsChartController.prototype.configureChartOptions = function () {
-            var self = this;
-            // this.options = {
-            //   thickness: 200
-            // };
-            this.options = {
-                chart: {
-                    type: 'pieChart',
-                    donut: true,
-                    height: 230,
-                    width: 460,
-                    // x: function(d){return d.key;},
-                    // y: function(d){return d.value;},
-                    showLabels: false,
-                    transitionDuration: 500,
-                    labelThreshold: 0.01,
-                    showLegend: false,
-                    // donutRatio: 0.2,
-                    color: function (d, i) {
-                        var colors = ["#FF7F0E", "#4393C3"];
-                        return colors[i % colors.length];
-                    }
-                },
-                title: {
-                    enable: true,
-                    text: "SHARE DE TIPOS DE PAGAMENTOS",
-                    class: "h4",
-                    css: {
-                        // width: "500px",
-                        // padding: "500px",
-                        textAlign: "left",
-                        position: "relative",
-                        top: "20px"
-                    }
-                }
-            };
-            this.typeEstabOptions = JSON.parse(JSON.stringify(this.options));
-            this.typeEstabOptions["chart"]["x"] = function (d) {
-                return self.getReducedName(d.x);
-            };
-            this.typeEstabOptions["chart"]["color"] = function (d, i) {
-                var colors = ["#2166AC", "#4A3BAE", "#17AB09", "#D81E1E", "#1E3E4A", "#E34E0C", "#838181"];
-                return colors[i % colors.length];
-            };
-            this.typeEstabOptions["title"]["text"] = "SHARE DE TIPOS DE ESTABELECIMENTOS";
-        };
-        TransactionsChartController.prototype.getReducedName = function (key) {
-            var reducedNames = {
-                "Restaurantes e outros serviços de alimentação e bebidas": "restaurantes",
-                "Comércio varejista de equipamentos de informática e comunicação; equipamentos e artigos de uso doméstico": "informatica",
-                "Comércio varejista de produtos alimentícios, bebidas e fumo": "alimentos",
-                "Comércio varejista de material de construção": "construcao",
-                "Comércio varejista de produtos farmacêuticos, perfumaria e cosméticos e artigos médicos, ópticos e ortopédicos": "farmaceutico",
-                "Comércio varejista de combustíveis para veículos automotores": "combustiveis",
-                "Hotéis e similares": "hoteis"
-            };
-            return reducedNames[key];
-        };
-        TransactionsChartController.$inject = [
-            "$scope",
-            "$timeout",
-            gogeo.DashboardService.$named
-        ];
-        return TransactionsChartController;
-    })();
-    gogeo.TransactionsChartController = TransactionsChartController;
-    gogeo.registerDirective("transactionsChart", function () {
-        return {
-            restrict: "E",
-            templateUrl: "dashboard/controls/transactions-chart-template.html",
-            controller: TransactionsChartController,
-            controllerAs: "transactions",
-            bindToController: true,
-            scope: {
-                buckets: "="
-            },
-            link: function (scope, element, attrs, controller) {
-            }
-        };
-    });
 })(gogeo || (gogeo = {}));
 /// <reference path="../../shell.ts" />
 /// <reference path="../../dashboard/services/dashboard-service.ts" />
@@ -2500,7 +1374,7 @@ var gogeo;
     gogeo.registerDirective("daterange", function () {
         return {
             restrict: "E",
-            template: "\n                <div class=\"input-group daterange\">\n                    <input \n                        id=\"startRange\"\n                        class=\"form-control\"\n                        type=\"text\"\n                        data-provide=\"datepicker\"\n                        data-date-clear-btn=\"true\"\n                        data-date-start-date=\"{{range.min}}\"\n                        data-date-end-date=\"{{range.max}}\"\n                        data-date-autoclose=\"true\"\n                        ng-model=\"startDate\"/>\n                    <span class=\"input-group-addon\">\n                        <i class=\"glyphicon glyphicon-calendar\"></i>\n                    </span>\n                    <input\n                        id=\"endRange\"\n                        class=\"form-control\"\n                        type=\"text\"\n                        data-provide=\"datepicker\"\n                        data-date-clear-btn=\"true\"\n                        data-date-start-date=\"{{range.min}}\"\n                        data-date-end-date=\"{{range.max}}\"\n                        data-date-autoclose=\"true\"\n                        ng-model=\"endDate\"/>\n                </div>",
+            template: "\n                <div class=\"input-group daterange\">\n                    <input \n                        id=\"startRange\"\n                        class=\"form-control\"\n                        type=\"text\"\n                        data-provide=\"datepicker\"\n                        data-date-clear-btn=\"true\"\n                        data-date-start-date=\"04/21/2015\"\n                        data-date-end-date=\"05/30/2015\"\n                        data-date-autoclose=\"true\"\n                        ng-model=\"startDate\"/>\n                    <span class=\"input-group-addon\">\n                        <i class=\"glyphicon glyphicon-calendar\"></i>\n                    </span>\n                    <input\n                        id=\"endRange\"\n                        class=\"form-control\"\n                        type=\"text\"\n                        data-provide=\"datepicker\"\n                        data-date-clear-btn=\"true\"\n                        data-date-start-date=\"04/21/2015\"\n                        data-date-end-date=\"05/30/2015\"\n                        data-date-autoclose=\"true\"\n                        ng-model=\"endDate\"/>\n                </div>",
             scope: {
                 startDate: "=",
                 endDate: "="
@@ -41485,4 +40359,1193 @@ var gogeo;
             "iscapital": false
         }
     ];
+})(gogeo || (gogeo = {}));
+/**
+ * Created by danfma on 07/03/15.
+ */
+var gogeo;
+(function (gogeo) {
+    function prefix(eventName) {
+        return "gogeo:" + eventName;
+    }
+    var DashboardEvent = (function () {
+        function DashboardEvent() {
+        }
+        DashboardEvent.mapLoaded = prefix("dashboard:mapLoaded");
+        return DashboardEvent;
+    })();
+    gogeo.DashboardEvent = DashboardEvent;
+})(gogeo || (gogeo = {}));
+/// <reference path="../../shell.ts" />
+/// <reference path="../services/dashboard-events.ts" />
+/// <reference path="../services/dashboard-service.ts" />
+var gogeo;
+(function (gogeo) {
+    var DashboardDetailsController = (function () {
+        function DashboardDetailsController($scope, $interval, $filter, service) {
+            this.$scope = $scope;
+            this.$interval = $interval;
+            this.$filter = $filter;
+            this.service = service;
+            this.hashtagResult = null;
+            this.selectedHashtag = null;
+        }
+        DashboardDetailsController.prototype.initialize = function () {
+            var _this = this;
+            this.service.hashtagResultObservable
+                .subscribeAndApply(this.$scope, function (result) { return _this.handleResult(result); });
+        };
+        DashboardDetailsController.prototype.handleResult = function (result) {
+            this.hashtagResult = result;
+            if (this.selectedHashtag) {
+                this.selectedHashtag.doc_count = result.doc_total;
+            }
+        };
+        DashboardDetailsController.prototype.unselect = function () {
+            this.selectedHashtag = null;
+            this.service.updateHashtagBucket(null);
+        };
+        DashboardDetailsController.$inject = [
+            "$scope",
+            "$interval",
+            "$filter",
+            gogeo.DashboardService.$named
+        ];
+        return DashboardDetailsController;
+    })();
+    gogeo.registerDirective("dashboardDetails", function () {
+        return {
+            restrict: "CE",
+            templateUrl: "dashboard/controls/dashboard-details-template.html",
+            controller: DashboardDetailsController,
+            controllerAs: "details",
+            bindToController: true,
+            scope: true,
+            link: function (scope, element, attrs, controller) {
+                controller.initialize();
+            }
+        };
+    });
+})(gogeo || (gogeo = {}));
+/// <reference path="../../shell.ts" />
+/// <reference path="../services/dashboard-events.ts" />
+/// <reference path="../services/dashboard-service.ts" />
+/**
+ * Created by danfma on 06/03/15.
+ */
+var gogeo;
+(function (gogeo) {
+    var DashboardHashtagsController = (function () {
+        function DashboardHashtagsController($scope, service) {
+            var _this = this;
+            this.$scope = $scope;
+            this.service = service;
+            this.buckets = [];
+            this.selectedHashtag = null;
+            this.message = null;
+            this.message = "Top 10 hashtags";
+            this.service.hashtagResultObservable
+                .subscribeAndApply(this.$scope, function (result) {
+                if (result && result["buckets_qtd"] == 10) {
+                    _this.message = "Top 10 hashtags";
+                }
+            });
+        }
+        DashboardHashtagsController.prototype.hasSelected = function () {
+            return this.selectedHashtag != null;
+        };
+        DashboardHashtagsController.prototype.selectHashtag = function (bucket) {
+            this.message = "Top 5 places for this hashtag";
+            this.selectedHashtag = bucket;
+            this.service.updateHashtagBucket(bucket);
+        };
+        DashboardHashtagsController.$inject = [
+            "$scope",
+            gogeo.DashboardService.$named
+        ];
+        return DashboardHashtagsController;
+    })();
+    gogeo.DashboardHashtagsController = DashboardHashtagsController;
+    gogeo.registerDirective("dashboardHashtags", function () {
+        return {
+            restrict: "E",
+            templateUrl: "dashboard/controls/dashboard-hashtags-template.html",
+            controller: DashboardHashtagsController,
+            controllerAs: "hashtags",
+            bindToController: true,
+            scope: {
+                buckets: "=",
+                selectedHashtag: "="
+            },
+            link: function (scope, element, attrs, controller) {
+            }
+        };
+    });
+})(gogeo || (gogeo = {}));
+/// <reference path="../../shell.ts" />
+/// <reference path="../../shared/abstract-controller.ts" />
+/// <reference path="../services/dashboard-events.ts" />
+/// <reference path="../services/dashboard-service.ts" />
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var gogeo;
+(function (gogeo) {
+    var DashboardController = (function (_super) {
+        __extends(DashboardController, _super);
+        function DashboardController($scope, service) {
+            var _this = this;
+            _super.call(this, $scope);
+            this.service = service;
+            this.startDate = "05/21/2015";
+            this.endDate = "05/30/2015";
+            this.dateFormat = "MM/DD/YYYY";
+            this.selected = "";
+            this.citiesToSearch = gogeo.Configuration.getPlacesToSearch();
+            this.rangeValueMin = 0;
+            this.rangeValueMax = 10339;
+            this.initialize();
+            this.service.dateLimitObservable
+                .subscribeAndApply(this.$scope, function (result) {
+                if (result) {
+                    _this.startDate = moment(new Date(result["max"])).subtract(15, "days").format("MM/DD/YYYY");
+                    _this.endDate = moment(new Date(result["max"])).format("MM/DD/YYYY");
+                }
+            });
+            this.service.loadParamsObservable
+                .subscribeAndApply(this.$scope, function (result) {
+                _this.loadParams(result);
+            });
+            this.citiesToSearch = gogeo.Configuration.getPlacesToSearch();
+        }
+        DashboardController.prototype.formatRangeValue = function (value) {
+            return numeral(value).format('R$ 0,0[.]00');
+        };
+        ;
+        DashboardController.prototype.loadParams = function (result) {
+            if (!result || JSON.stringify(result) === JSON.stringify({})) {
+                return;
+            }
+            var what = result["what"];
+            if (what) {
+                this.somethingTerm = what;
+                this.service.updateSomethingTerms([this.somethingTerm]);
+            }
+            var where = result["where"];
+            if (where) {
+                this.place = where;
+                this.service.updatePlace(this.place);
+            }
+            var startDate = result["startDate"];
+            var endDate = result["endDate"];
+            if (startDate || endDate) {
+                if (startDate) {
+                    this.startDate = startDate;
+                }
+                if (endDate) {
+                    this.endDate = endDate;
+                }
+                this.service.updateDateRange(new Date(Date.parse(this.startDate)), new Date(Date.parse(this.endDate)));
+            }
+        };
+        DashboardController.prototype.initialize = function () {
+            var _this = this;
+            _super.prototype.initialize.call(this);
+            this.watchAsObservable("somethingTerm")
+                .skip(1)
+                .throttle(800)
+                .select(function (term) {
+                return Enumerable
+                    .from(term.split(" "))
+                    .select(function (part) { return part.trim(); })
+                    .toArray();
+            })
+                .subscribe(function (terms) { return _this.service.updateSomethingTerms(terms); });
+            this.watchAsObservable("place")
+                .skip(1)
+                .throttle(800)
+                .subscribe(function (place) { return _this.service.updatePlace(place); });
+            this.watchAsObservable("typeEstab")
+                .skip(1)
+                .throttle(800)
+                .subscribe(function (typeEstab) { return _this.service.updateTypeEstab(typeEstab); });
+            Rx.Observable.merge(this.watchAsObservable("startDate"), this.watchAsObservable("endDate"))
+                .skip(1)
+                .throttle(400)
+                .subscribe(function (range) {
+                var startDate = null;
+                var endDate = null;
+                if (_this.startDate) {
+                    startDate = new Date(Date.parse(_this.startDate));
+                }
+                if (_this.endDate) {
+                    endDate = new Date(Date.parse(_this.endDate));
+                }
+                _this.service.updateDateRange(startDate, endDate);
+            });
+            Rx.Observable.merge(this.watchAsObservable("rangeValueMin"), this.watchAsObservable("rangeValueMax"))
+                .skip(1)
+                .throttle(400)
+                .subscribe(function (range) {
+                _this.service.updateValueRange(_this.rangeValueMin, _this.rangeValueMax);
+            });
+        };
+        DashboardController.$inject = [
+            "$scope",
+            gogeo.DashboardService.$named
+        ];
+        return DashboardController;
+    })(gogeo.AbstractController);
+    gogeo.registerDirective("dashboardHeader", function () {
+        return {
+            restrict: "C",
+            templateUrl: "dashboard/controls/dashboard-header-template.html",
+            controller: DashboardController,
+            controllerAs: "header",
+            bindToController: true,
+            scope: true
+        };
+    });
+})(gogeo || (gogeo = {}));
+/// <reference path="../../shell.ts" />
+/// <reference path="../services/dashboard-events.ts" />
+/// <reference path="../services/dashboard-service.ts" />
+/// <reference path="../services/metrics.ts" />
+/**
+ * Created by danfma on 07/03/15.
+ */
+var gogeo;
+(function (gogeo) {
+    var DashboardMapController = (function () {
+        function DashboardMapController($scope, $cookies, $timeout, $location, linkify, $sce, $geo, service, metrics) {
+            this.$scope = $scope;
+            this.$cookies = $cookies;
+            this.$timeout = $timeout;
+            this.$location = $location;
+            this.linkify = linkify;
+            this.$sce = $sce;
+            this.$geo = $geo;
+            this.service = service;
+            this.metrics = metrics;
+            this.query = { query: { filtered: { filter: {} } } };
+            this.selected = "inactive";
+            this.mapTypes = ["point", "cluster", "intensity", "thematic"];
+            this.mapSelected = "point";
+            this.drawing = false;
+            this.baseLayers = null;
+            this.layerGroup = null;
+            this.drawnItems = null;
+            this.drawnGeom = null;
+            this.restricted = false;
+            this.canOpenPopup = true;
+            this.thematicMaps = {};
+            this.baseLayerSelected = "day";
+            this.levent = null;
+            this.thematicSelectedLayers = [
+                "restaurantes", "informatica", "alimentos", "construcao", "farmaceutico", "combustiveis", "hoteis"
+            ];
+            // queries: any = {
+            //     android: '<a href="http://twitter.com/download/android" rel="nofollow">Twitter for Android</a>',
+            //     iphone: '<a href="http://twitter.com/download/iphone" rel="nofollow">Twitter for iPhone</a>',
+            //     web: '<a href="http://twitter.com" rel="nofollow">Twitter Web Client</a>',
+            //     instagram: '<a href="http://instagram.com" rel="nofollow">Instagram</a>',
+            //     foursquare: '<a href="http://foursquare.com" rel="nofollow">Foursquare</a>',
+            //     others: ''
+            // }
+            this.queries = {
+                restaurantes: "Restaurantes e outros serviços de alimentação e bebidas",
+                informatica: "Comércio varejista de equipamentos de informática e comunicação",
+                alimentos: "Comércio varejista de produtos alimentícios, bebidas e fumo",
+                construcao: "Comércio varejista de material de construção",
+                farmaceutico: "Comércio varejista de produtos farmacêuticos, perfumaria e cosméticos e artigos médicos, ópticos e ortopédicos",
+                combustiveis: "Comércio varejista de combustíveis para veículos automotores",
+                hoteis: "Hotéis e similares",
+            };
+            this._thematicLayers = new Rx.BehaviorSubject(this.thematicSelectedLayers);
+            this._selectedMap = new Rx.BehaviorSubject(null);
+            this.layerGroup = L.layerGroup([]);
+            this.baseLayers = L.featureGroup([]);
+        }
+        Object.defineProperty(DashboardMapController.prototype, "thematicLayers", {
+            get: function () {
+                return this._thematicLayers;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        DashboardMapController.prototype.initialize = function (map) {
+            var _this = this;
+            this.map = map;
+            this.baseLayers.addLayer(this.getDayMap());
+            this.map.addLayer(this.baseLayers);
+            this.map.on("moveend", function (e) { return _this.onMapLoaded(); });
+            this.map.on("click", function (e) { return _this.openPopup(e); });
+            this.map.on("draw:created", function (e) { return _this.drawnHandler(e); });
+            this.map.on("draw:deleted", function (e) { return _this.drawnHandler(e); });
+            this.map.on("draw:edited", function (e) { return _this.drawnHandler(e); });
+            this.map.on("draw:editstart", function (e) { return _this.blockPopup(); });
+            this.map.on("draw:editstop", function (e) { return _this.allowPopup(); });
+            this.map.on("draw:deletestart", function (e) { return _this.blockPopup(); });
+            this.map.on("draw:deletestop", function (e) { return _this.allowPopup(); });
+            this.initializeLayer();
+            this.drawnItems = new L.FeatureGroup();
+            this.map.addLayer(this.drawnItems);
+            this.initializeDrawControl();
+            this.service.geomSpaceObservable
+                .subscribeAndApply(this.$scope, function (geom) { return _this.handleGeom(geom); });
+            this.service.placeBoundObservable
+                .where(function (point) { return point != null; })
+                .subscribeAndApply(this.$scope, function (point) { return _this.fitMap(point); });
+            this.service.loadParamsObservable
+                .subscribeAndApply(this.$scope, function (result) {
+                _this.loadParams(result);
+            });
+            Rx.Observable
+                .merge(this._thematicLayers)
+                .throttle(800)
+                .subscribe(function () {
+                _this.metrics.publishThematicMetric(_this.thematicSelectedLayers);
+            });
+            Rx.Observable
+                .merge(this._selectedMap)
+                .throttle(800)
+                .subscribe(function () {
+                _this.service.updateMapType(_this.mapSelected);
+                _this.metrics.publishMapTypeMetric(_this.mapSelected);
+            });
+            if (!this.$location.search()["center"] && !this.$location.search()["zoom"]) {
+                var shareLocation = (this.$cookies["gogeo.shareLocation"] === "true");
+                if (this.$cookies["gogeo.firstLoad"] == undefined || shareLocation) {
+                    this.$cookies["gogeo.firstLoad"] = false;
+                    if (!shareLocation) {
+                        this.$cookies["gogeo.shareLocation"] = false;
+                    }
+                    this.setGeoLocation();
+                }
+            }
+        };
+        DashboardMapController.prototype.loadParams = function (result) {
+            if (!result || JSON.stringify(result) === JSON.stringify({})) {
+                return;
+            }
+            var zoom = parseInt(result["zoom"]);
+            if (zoom) {
+                this.map.setZoom(zoom);
+            }
+            var centerString = result["center"];
+            if (centerString) {
+                centerString = centerString.split(",");
+                if (centerString.length != 2) {
+                    // Compatibility with previous version
+                    centerString = centerString.split(";");
+                }
+                var lat = parseFloat(centerString[0]);
+                var lng = parseFloat(centerString[1]);
+                var center = new L.LatLng(lat, lng);
+                this.map.setView(center);
+            }
+            var mapType = result["type"];
+            if (mapType && this.mapTypes.indexOf(mapType) != (-1)) {
+                this.mapSelected = mapType;
+            }
+            var baseLayer = result["baseLayer"];
+            if (baseLayer === "night") {
+                this.switchBaseLayer();
+            }
+        };
+        DashboardMapController.prototype.fitMap = function (point) {
+            this.map.setView(point, 12);
+        };
+        DashboardMapController.prototype.initializeLayer = function () {
+            var _this = this;
+            this.map.addLayer(this.layerGroup);
+            var layers = this.createLayers();
+            for (var i in layers) {
+                this.layerGroup.addLayer(layers[i]);
+            }
+            this.service.queryObservable
+                .where(function (q) { return q != null; })
+                .throttle(400)
+                .subscribeAndApply(this.$scope, function (query) { return _this.queryHandler(query); });
+            this.service.tweetObservable
+                .subscribeAndApply(this.$scope, function (tweet) { return _this.handlePopupResult(tweet); });
+        };
+        DashboardMapController.prototype.setGeoLocation = function () {
+            var _this = this;
+            var shareLocation = (this.$cookies["gogeo.shareLocation"] === "true");
+            if (shareLocation) {
+                var latitude = this.$cookies["gogeo.location.lat"];
+                var longitude = this.$cookies["gogeo.location.lng"];
+                this.centerMap(latitude, longitude);
+            }
+            else {
+                this.$geo.getCurrentPosition().then(function (location) {
+                    var coords = location.coords;
+                    _this.centerMap(coords.latitude, coords.longitude);
+                    _this.$cookies["gogeo.shareLocation"] = "true";
+                    _this.$cookies["gogeo.location.lat"] = coords.latitude;
+                    _this.$cookies["gogeo.location.lng"] = coords.longitude;
+                });
+            }
+        };
+        DashboardMapController.prototype.centerMap = function (lat, lng) {
+            if (lat && lng) {
+                var center = new L.LatLng(lat, lng);
+                this.map.setView(center, 12);
+            }
+        };
+        DashboardMapController.prototype.getNightMap = function () {
+            var mapOptions = {
+                // How you would like to style the map. 
+                // This is where you would paste any style found on Snazzy Maps.
+                styles: [
+                    { "stylers": [{ "visibility": "simplified" }] },
+                    { "stylers": [{ "color": "#131314" }] },
+                    {
+                        "featureType": "water",
+                        "stylers": [{ "color": "#131313" }, { "lightness": 7 }]
+                    },
+                    {
+                        "elementType": "labels.text.fill",
+                        "stylers": [{ "visibility": "on" }, { "lightness": 25 }]
+                    }
+                ]
+            };
+            var options = {
+                mapOptions: mapOptions,
+                maptiks_id: "night-map"
+            };
+            return new L.Google("ROADMAP", options);
+        };
+        DashboardMapController.prototype.getDayMap = function () {
+            return new L.Google('ROADMAP', { maptiks_id: "day-map" });
+        };
+        DashboardMapController.prototype.blockPopup = function () {
+            this.canOpenPopup = false;
+        };
+        DashboardMapController.prototype.allowPopup = function () {
+            this.canOpenPopup = true;
+        };
+        DashboardMapController.prototype.handleGeom = function (geom) {
+        };
+        DashboardMapController.prototype.initializeDrawControl = function () {
+            var drawOptions = {
+                draw: {
+                    polyline: false,
+                    polygon: false,
+                    circle: false,
+                    marker: false,
+                    rectangle: {
+                        showArea: true,
+                        shapeOptions: {
+                            color: "blue"
+                        }
+                    }
+                },
+                edit: {
+                    featureGroup: this.drawnItems
+                },
+                trash: true
+            };
+            var drawControl = new L.Control.Draw(drawOptions);
+            this.map.addControl(drawControl);
+        };
+        DashboardMapController.prototype.queryHandler = function (query) {
+            if (JSON.stringify(query) !== JSON.stringify(this.query)) {
+                this.query = query;
+                this.updateLayer();
+            }
+            else {
+            }
+        };
+        DashboardMapController.prototype.drawnHandler = function (event) {
+            var _this = this;
+            var layerType = event["layerType"];
+            var eventType = event["type"];
+            var layer = event["layer"];
+            if (!layer) {
+                layer = this.drawnItems.getLayers()[0];
+            }
+            this.drawnItems.clearLayers();
+            if (layer) {
+                this.restricted = false;
+                var geojson = layer.toGeoJSON();
+                this.drawnItems.addLayer(layer);
+                this.onMapLoaded(this.getDrawGeomSpace(geojson["geometry"]));
+                layer.on("click", function (e) { return _this.openPopup(e); });
+            }
+            else {
+                this.restricted = false;
+                this.drawnGeom = null;
+                this.updateLayer();
+                this.onMapLoaded();
+            }
+        };
+        DashboardMapController.prototype.getDrawGeomSpace = function (geojson) {
+            return {
+                source: "draw",
+                type: geojson["type"],
+                coordinates: geojson["coordinates"]
+            };
+        };
+        DashboardMapController.prototype.createLayers = function () {
+            var url = this.configureUrl();
+            var options = {
+                subdomains: gogeo.Configuration.subdomains,
+                maptiks_id: this.mapSelected
+            };
+            if (["point", "intensity"].indexOf(this.mapSelected) != (-1)) {
+                return [L.tileLayer(url, options)];
+            }
+            else if (this.mapSelected === "thematic") {
+                return this.createThematicLayers(url, options);
+            }
+            else if (this.mapSelected === 'cluster') {
+                return [this.createClusterLayer(url)];
+            }
+        };
+        DashboardMapController.prototype.configureUrl = function () {
+            var database = gogeo.Configuration.getDatabaseName();
+            var collection = gogeo.Configuration.getCollectionName();
+            var buffer = 8;
+            var stylename = "gogeo_many_points";
+            var serviceName = "tile.png";
+            if (this.mapSelected === "cluster") {
+                serviceName = "cluster.json";
+            }
+            if (this.mapSelected === "thematic") {
+                stylename = "restaurantes_1";
+            }
+            if (this.mapSelected === "intensity") {
+                stylename = "gogeo_intensity";
+            }
+            var url = "/map/"
+                + database + "/" +
+                collection + "/{z}/{x}/{y}/"
+                + serviceName + "?buffer=" + buffer +
+                "&stylename=" + stylename + "&mapkey=123";
+            if (this.query) {
+                url = url + "&q=" + encodeURIComponent(angular.toJson(this.query));
+            }
+            if (this.drawnGeom) {
+                url = url + "&geom=" + angular.toJson(this.drawnGeom);
+            }
+            return gogeo.Configuration.makeUrl(url);
+        };
+        DashboardMapController.prototype.createThematicLayers = function (url, options) {
+            var array = [];
+            var layer = null;
+            url = this.configureThematicUrl("restaurantes", "restaurantes_1");
+            layer = L.tileLayer(url, options);
+            this.thematicMaps["restaurantes"] = layer;
+            array.push(layer);
+            url = this.configureThematicUrl("informatica", "informatica_1");
+            layer = L.tileLayer(url, options);
+            this.thematicMaps["informatica"] = layer;
+            array.push(layer);
+            url = this.configureThematicUrl("alimentos", "alimentos_1");
+            layer = L.tileLayer(url, options);
+            this.thematicMaps["alimentos"] = layer;
+            array.push(layer);
+            url = this.configureThematicUrl("construcao", "construcao_1");
+            layer = L.tileLayer(url, options);
+            this.thematicMaps["construcao"] = layer;
+            array.push(layer);
+            url = this.configureThematicUrl("farmaceutico", "farmaceutico_1");
+            layer = L.tileLayer(url, options);
+            this.thematicMaps["farmaceutico"] = layer;
+            array.push(layer);
+            url = this.configureThematicUrl("combustiveis", "combustiveis_1");
+            layer = L.tileLayer(url, options);
+            this.thematicMaps["combustiveis"] = layer;
+            array.push(layer);
+            url = this.configureThematicUrl("hoteis", "hoteis_1");
+            layer = L.tileLayer(url, options);
+            this.thematicMaps["hoteis"] = layer;
+            array.push(layer);
+            return array;
+        };
+        DashboardMapController.prototype.configureThematicUrl = function (term, stylename) {
+            var originalQuery = this.query;
+            if (term === 'others') {
+                var thematicQuery = this.createThematicOthersQuery(this.query);
+                this.query = thematicQuery.build();
+            }
+            else {
+                var sourceTermQuery = new gogeo.SourceTermQuery(this.queries[term]);
+                var thematicQuery = new gogeo.ThematicQuery([sourceTermQuery], this.query);
+                this.query = thematicQuery.build();
+            }
+            ;
+            var url = this.configureUrl();
+            url = url.replace("restaurantes_1", stylename);
+            this.query = originalQuery;
+            return url;
+        };
+        DashboardMapController.prototype.createThematicOthersQuery = function (query) {
+            var q1 = new gogeo.TextQueryBuilder(["source"], "*ipad*");
+            var q2 = new gogeo.TextQueryBuilder(["source"], "*windows*");
+            var q3 = new gogeo.TextQueryBuilder(["source"], "*jobs*");
+            var q4 = new gogeo.TextQueryBuilder(["source"], "*mac*");
+            var tq = null;
+            if (query) {
+                tq = new gogeo.ThematicQuery([q1, q2, q3, q4], query);
+            }
+            else {
+                tq = new gogeo.ThematicQuery([q1, q2, q3, q4]);
+            }
+            return tq;
+        };
+        DashboardMapController.prototype.switchBaseLayer = function () {
+            this.baseLayers.clearLayers();
+            if (this.baseLayerSelected === "day") {
+                this.baseLayerSelected = "night";
+                this.baseLayers.addLayer(this.getNightMap());
+            }
+            else {
+                this.baseLayerSelected = "day";
+                this.baseLayers.addLayer(this.getDayMap());
+            }
+            this.service.updateMapBase(this.baseLayerSelected);
+            this.metrics.publishSwitchBaseLayer(this.baseLayerSelected);
+            this.baseLayers.bringToBack();
+        };
+        DashboardMapController.prototype.formatTweetText = function (text) {
+            return this.$sce.trustAsHtml(this.linkify.twitter(text));
+        };
+        DashboardMapController.prototype.formatDate = function (dateString) {
+            var date = new Date(dateString);
+            return moment(date).utc().format("LLLL");
+        };
+        DashboardMapController.prototype.toggleThematicMap = function (id, layer) {
+            if (this.layerGroup.hasLayer(layer)) {
+                this.layerGroup.removeLayer(layer);
+                this.thematicSelectedLayers.splice(this.thematicSelectedLayers.indexOf(id), 1);
+            }
+            else {
+                this.layerGroup.addLayer(layer);
+                this.thematicSelectedLayers.splice(0, 0, id);
+            }
+            this._thematicLayers.onNext(this.thematicSelectedLayers);
+        };
+        DashboardMapController.prototype.onMapLoaded = function (geom) {
+            this.service.updateMapZoom(this.map.getZoom());
+            this.service.updateMapCenter(this.map.getCenter());
+            if (this.restricted) {
+                return;
+            }
+            if (geom) {
+                this.service.updateGeomSpace(geom);
+                this.restricted = true;
+                this.drawnGeom = geom;
+                this.updateLayer();
+            }
+            else {
+                this.service.updateGeomSpaceByBounds(this.map.getBounds());
+            }
+        };
+        DashboardMapController.prototype.hidePopup = function () {
+            this.map.closePopup(this.popup);
+            this.tweetResult = null;
+        };
+        DashboardMapController.prototype.formatPictureUrl = function (url) {
+            if (!url) {
+                return url;
+            }
+            var url = url.replace("_normal", "");
+            return url;
+        };
+        DashboardMapController.prototype.formatTweetUrl = function () {
+            if (this.tweetResult) {
+                var url = "https://twitter.com/";
+                url = url + this.tweetResult["user.screen_name"] + "/";
+                url = url + "status/";
+                url = url + this.tweetResult["id"];
+                return url;
+            }
+        };
+        DashboardMapController.prototype.openPopup = function (levent) {
+            var zoom = this.map.getZoom();
+            var intersects = true;
+            if (!this.canOpenPopup) {
+                return;
+            }
+            if (this.drawnItems.getLayers().length > 0) {
+                var layer = this.drawnItems.getLayers()[0];
+                var bounds = layer.getBounds();
+                var point = levent.latlng;
+                intersects = bounds.contains(point);
+            }
+            if ((this.mapSelected === "point" || this.mapSelected === "thematic") && intersects) {
+                var queries = [];
+                for (var index in this.thematicMaps) {
+                    var thematicLayer = this.thematicMaps[index];
+                    if (this.layerGroup.hasLayer(thematicLayer)) {
+                        var query = null;
+                        if (index === 'others') {
+                            query = this.createThematicOthersQuery().build();
+                        }
+                        else {
+                            query = new gogeo.SourceTermQuery(this.queries[index]);
+                        }
+                        queries.push(query);
+                    }
+                }
+                var thematicQuery = new gogeo.ThematicQuery(queries, this.query);
+                this.service.getTransaction(levent.latlng, zoom, thematicQuery);
+                this.levent = levent;
+            }
+        };
+        DashboardMapController.prototype.handlePopupResult = function (result) {
+            if (!result || result.length == 0) {
+                return;
+            }
+            this.tweetResult = result[0];
+            if (!this.tweetResult) {
+                return;
+            }
+            if (this.popup == null) {
+                var options = {
+                    closeButton: false,
+                    className: "marker-popup",
+                    offset: new L.Point(-203, -368)
+                };
+                this.popup = L.popup(options);
+                this.popup.setContent($("#tweet-popup")[0]);
+            }
+            else {
+                this.popup.setContent($("#tweet-popup")[0]);
+                this.popup.update();
+            }
+            this.popup.setLatLng(this.levent.latlng);
+            this.map.openPopup(this.popup);
+        };
+        DashboardMapController.prototype.changeMapType = function (element) {
+            this.mapSelected = element.target.id;
+            this._selectedMap.onNext(this.mapSelected);
+            if ((this.mapSelected === "thematic" || this.mapSelected === "intensity")
+                && this.baseLayerSelected === "day") {
+                this.switchBaseLayer();
+            }
+            if (this.mapSelected === "point" && this.baseLayerSelected === "night") {
+                this.switchBaseLayer();
+            }
+            this.updateLayer();
+        };
+        DashboardMapController.prototype.updateLayer = function () {
+            this.layerGroup.clearLayers();
+            var layers = this.createLayers();
+            for (var i in layers) {
+                this.layerGroup.addLayer(layers[i]);
+            }
+        };
+        DashboardMapController.prototype.createClusterLayer = function (url) {
+            var options = {
+                subdomains: gogeo.Configuration.subdomains,
+                useJsonP: false
+            };
+            return new L.TileCluster(url, options);
+        };
+        DashboardMapController.$inject = [
+            "$scope",
+            "$cookies",
+            "$timeout",
+            "$location",
+            "linkify",
+            "$sce",
+            "$geolocation",
+            gogeo.DashboardService.$named,
+            gogeo.MetricsService.$named
+        ];
+        return DashboardMapController;
+    })();
+    gogeo.registerDirective("dashboardMap", [
+        "$timeout",
+        function ($timeout) {
+            return {
+                restrict: "C",
+                templateUrl: "dashboard/controls/dashboard-map-template.html",
+                controller: DashboardMapController,
+                controllerAs: "map",
+                bindToController: true,
+                link: function (scope, element, attrs, controller) {
+                    var options = {
+                        attributionControl: false,
+                        minZoom: 4,
+                        maxZoom: 18,
+                        center: new L.LatLng(37.757836, -122.447041),
+                        zoom: 6,
+                        maptiks_id: "leaflet-map"
+                    };
+                    var mapContainerElement = element.find(".dashboard-map-container")[0];
+                    var map = L.map("map-container", options);
+                    controller.initialize(map);
+                    $timeout(function () { return map.invalidateSize(false); }, 1);
+                    scope.$on("$destroy", function () {
+                        map.remove();
+                    });
+                }
+            };
+        }
+    ]);
+    gogeo.registerDirective("errSrc", function () {
+        return {
+            link: function (scope, element, attrs) {
+                element.bind("error", function () {
+                    if (attrs.src != attrs.errSrc) {
+                        attrs.$set("src", attrs.errSrc);
+                    }
+                });
+            }
+        };
+    });
+})(gogeo || (gogeo = {}));
+/// <reference path="../../shell.ts" />
+var gogeo;
+(function (gogeo) {
+    gogeo.registerDirective("dashboardPanel", function () {
+        return {
+            restrict: "C",
+            link: function (scope, element, attributes) {
+                function adjustSizes() {
+                    var body = $(document.body);
+                    var size = {
+                        width: body.innerWidth(),
+                        height: body.innerHeight()
+                    };
+                    var $top = element.find(".dashboard-top-panel");
+                    var $center = element.find(".dashboard-center-panel");
+                    $top.height($top.attr("data-height") + "px");
+                    $center.height(size.height - $top.height());
+                }
+                $(window).on("resize", adjustSizes);
+                adjustSizes(); // forcing the first resize
+                scope.$on("destroy", function () {
+                    $(window).off("resize", adjustSizes);
+                });
+            }
+        };
+    });
+})(gogeo || (gogeo = {}));
+/// <reference path="../../shell.ts" />
+/// <reference path="../../shell.ts" />
+var gogeo;
+(function (gogeo) {
+    var DateHistogramChartController = (function () {
+        function DateHistogramChartController($scope, $timeout, service) {
+            var _this = this;
+            this.$scope = $scope;
+            this.$timeout = $timeout;
+            this.service = service;
+            this.SIMPLE_DATE_PATTERN = "YYYY-MM-dd";
+            // buckets: Array<IDateHistogram> = [];
+            this.buckets = [];
+            this.options = {
+                chart: {
+                    type: 'multiChart',
+                    height: 330,
+                    width: 400,
+                    color: [
+                        "#1f77b4",
+                        "#2ca02c"
+                    ],
+                    margin: {
+                        top: 20,
+                        right: 20,
+                        bottom: 40,
+                        left: 100
+                    },
+                    showValues: true,
+                    transitionDuration: 500,
+                    xAxis: {
+                        axisLabel: "Tempo",
+                        tickFormat: function (d) {
+                            return moment(new Date(d)).format("DD/MM/YYYY");
+                        },
+                        showMaxMin: true,
+                        rotateLabels: 50,
+                        axisLabelDistance: 10
+                    },
+                    yAxis1: {
+                        axisLabel: "Quantidade (k)",
+                        tickFormat: function (d) {
+                            return (d / 1000).toFixed(2);
+                        },
+                        axisLabelDistance: 30
+                    },
+                    yAxis2: {
+                        axisLabel: "Valor (k)",
+                        tickFormat: function (d) {
+                            return (d / 1000).toFixed(2);
+                        },
+                        axisLabelDistance: 30,
+                        width: 90,
+                        margin: {
+                            right: 70
+                        }
+                    }
+                },
+                title: {
+                    enable: true,
+                    text: "TRANSAÇÕES/PERÍODO",
+                    class: "h4",
+                    css: {
+                        // width: "500px",
+                        // padding: "500px",
+                        textAlign: "left",
+                        position: "relative",
+                        top: "20px"
+                    }
+                }
+            };
+            this.service.queryObservable
+                .where(function (q) { return q != null; })
+                .throttle(400)
+                .subscribeAndApply(this.$scope, function (query) { return _this.getDataChart(); });
+            this.buckets = [
+                {
+                    key: "Quantidade",
+                    type: "line",
+                    yAxis: 1,
+                    values: []
+                },
+                {
+                    key: "R$",
+                    type: "line",
+                    yAxis: 2,
+                    values: []
+                }
+            ];
+        }
+        DateHistogramChartController.prototype.getDataChart = function () {
+            var _this = this;
+            this.service.getDateHistogramAggregation().success(function (result) {
+                var quantityValues = [];
+                var amountValues = [];
+                _this.buckets[0]["values"] = [];
+                _this.buckets[1]["values"] = [];
+                result.forEach(function (item) {
+                    quantityValues.push({
+                        x: item['timestamp'] + (3 * 3600 * 1000),
+                        y: item['count']
+                    });
+                    amountValues.push({
+                        x: item['timestamp'] + (3 * 3600 * 1000),
+                        y: item['sum']
+                    });
+                });
+                _this.buckets[0]["values"] = quantityValues;
+                _this.buckets[1]["values"] = amountValues;
+            });
+        };
+        DateHistogramChartController.$inject = [
+            "$scope",
+            "$timeout",
+            gogeo.DashboardService.$named
+        ];
+        return DateHistogramChartController;
+    })();
+    gogeo.DateHistogramChartController = DateHistogramChartController;
+    gogeo.registerDirective("dateHistogramChart", function () {
+        return {
+            restrict: "E",
+            templateUrl: "dashboard/controls/date-histogram-chart-template.html",
+            controller: DateHistogramChartController,
+            controllerAs: "datehisto",
+            bindToController: true,
+            scope: {
+                buckets: "="
+            },
+            link: function (scope, element, attrs, controller) {
+            }
+        };
+    });
+})(gogeo || (gogeo = {}));
+/// <reference path="../../shell.ts" />
+var gogeo;
+(function (gogeo) {
+    var SummaryController = (function () {
+        function SummaryController($scope, $timeout, service) {
+            var _this = this;
+            this.$scope = $scope;
+            this.$timeout = $timeout;
+            this.service = service;
+            this.morning = 0;
+            this.afternoon = 0;
+            this.night = 0;
+            this.service.queryObservable
+                .where(function (q) { return q != null; })
+                .throttle(400)
+                .subscribeAndApply(this.$scope, function (query) { return _this.getSummary(); });
+        }
+        SummaryController.prototype.getSummary = function () {
+            var _this = this;
+            this.service.getStatsAggregationSummary().success(function (result) {
+                // var colors = [ "#053061", "#2166AC", "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
+                result.forEach(function (item) {
+                    if (item["key"] == "tarde") {
+                        _this.afternoon = item["sum"];
+                    }
+                    if (item["key"] == "noite") {
+                        _this.night = item["sum"];
+                    }
+                    else {
+                        _this.morning = item["sum"];
+                    }
+                });
+            });
+        };
+        SummaryController.$inject = [
+            "$scope",
+            "$timeout",
+            gogeo.DashboardService.$named
+        ];
+        return SummaryController;
+    })();
+    gogeo.SummaryController = SummaryController;
+    gogeo.registerDirective("summary", function () {
+        return {
+            restrict: "E",
+            templateUrl: "dashboard/controls/summary-template.html",
+            controller: SummaryController,
+            controllerAs: "summary",
+            bindToController: true,
+            scope: {
+                buckets: "="
+            },
+            link: function (scope, element, attrs, controller) {
+            }
+        };
+    });
+})(gogeo || (gogeo = {}));
+/// <reference path="../../shell.ts" />
+var gogeo;
+(function (gogeo) {
+    var TransactionsChartController = (function () {
+        function TransactionsChartController($scope, $timeout, service) {
+            var _this = this;
+            this.$scope = $scope;
+            this.$timeout = $timeout;
+            this.service = service;
+            this.buckets = [];
+            this.typeEstabBuckets = [];
+            this.options = {};
+            this.typeEstabOptions = {};
+            angular.element(document).ready(function () {
+                _this.getDataChart();
+            });
+            this.service.queryObservable
+                .where(function (q) { return q != null; })
+                .throttle(400)
+                .subscribeAndApply(this.$scope, function (query) { return _this.getDataChart(); });
+        }
+        TransactionsChartController.prototype.getDataChart = function () {
+            var _this = this;
+            this.configureChartOptions();
+            this.service.getStatsAggregationTypePay().success(function (result) {
+                _this.buckets = [];
+                // var colors = [ "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
+                result.forEach(function (item) {
+                    // console.log("********", item);
+                    _this.buckets.push({
+                        x: item['key'].toUpperCase(),
+                        y: item['sum']
+                    });
+                });
+            });
+            this.service.getStatsAggregationTypeEstab().success(function (result) {
+                _this.typeEstabBuckets = [];
+                // var colors = [ "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
+                result.forEach(function (item) {
+                    // console.log("********", item);
+                    _this.typeEstabBuckets.push({
+                        x: item['key'],
+                        y: item['sum']
+                    });
+                });
+            });
+        };
+        TransactionsChartController.prototype.configureChartOptions = function () {
+            var self = this;
+            // this.options = {
+            //   thickness: 200
+            // };
+            this.options = {
+                chart: {
+                    type: 'pieChart',
+                    donut: true,
+                    height: 230,
+                    width: 460,
+                    // x: function(d){return d.key;},
+                    // y: function(d){return d.value;},
+                    showLabels: false,
+                    transitionDuration: 500,
+                    labelThreshold: 0.01,
+                    showLegend: false,
+                    // donutRatio: 0.2,
+                    color: function (d, i) {
+                        var colors = ["#FF7F0E", "#4393C3"];
+                        return colors[i % colors.length];
+                    }
+                },
+                title: {
+                    enable: true,
+                    text: "SHARE DE TIPOS DE PAGAMENTOS",
+                    class: "h4",
+                    css: {
+                        // width: "500px",
+                        // padding: "500px",
+                        textAlign: "left",
+                        position: "relative",
+                        top: "20px"
+                    }
+                }
+            };
+            this.typeEstabOptions = JSON.parse(JSON.stringify(this.options));
+            this.typeEstabOptions["chart"]["x"] = function (d) {
+                return self.getReducedName(d.x);
+            };
+            this.typeEstabOptions["chart"]["color"] = function (d, i) {
+                var colors = ["#2166AC", "#4A3BAE", "#17AB09", "#D81E1E", "#1E3E4A", "#E34E0C", "#838181"];
+                return colors[i % colors.length];
+            };
+            this.typeEstabOptions["title"]["text"] = "SHARE DE TIPOS DE ESTABELECIMENTOS";
+        };
+        TransactionsChartController.prototype.getReducedName = function (key) {
+            var reducedNames = {
+                "Restaurantes e outros serviços de alimentação e bebidas": "restaurantes",
+                "Comércio varejista de equipamentos de informática e comunicação; equipamentos e artigos de uso doméstico": "informatica",
+                "Comércio varejista de produtos alimentícios, bebidas e fumo": "alimentos",
+                "Comércio varejista de material de construção": "construcao",
+                "Comércio varejista de produtos farmacêuticos, perfumaria e cosméticos e artigos médicos, ópticos e ortopédicos": "farmaceutico",
+                "Comércio varejista de combustíveis para veículos automotores": "combustiveis",
+                "Hotéis e similares": "hoteis"
+            };
+            return reducedNames[key];
+        };
+        TransactionsChartController.$inject = [
+            "$scope",
+            "$timeout",
+            gogeo.DashboardService.$named
+        ];
+        return TransactionsChartController;
+    })();
+    gogeo.TransactionsChartController = TransactionsChartController;
+    gogeo.registerDirective("transactionsChart", function () {
+        return {
+            restrict: "E",
+            templateUrl: "dashboard/controls/transactions-chart-template.html",
+            controller: TransactionsChartController,
+            controllerAs: "transactions",
+            bindToController: true,
+            scope: {
+                buckets: "="
+            },
+            link: function (scope, element, attrs, controller) {
+            }
+        };
+    });
 })(gogeo || (gogeo = {}));

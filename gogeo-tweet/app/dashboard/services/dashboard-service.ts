@@ -29,6 +29,7 @@ module gogeo {
     private _lastSomethingTerms:string[] = [];
     private _lastPlaceString: string = null;
     private _lastDateRange: IDateRange = null;
+    private _lastValueRange: IValueRange = null;
     private _lastMapCenter: L.LatLng = null;
     private _lastMapZoom: number = 0;
     private _lastMapType: string = null;
@@ -70,6 +71,7 @@ module gogeo {
     _placeObservable = new Rx.BehaviorSubject<string>(null);
     _hashtagResultObservable = new Rx.BehaviorSubject<IHashtagResult>(null);
     _dateRangeObservable = new Rx.BehaviorSubject<IDateRange>(null);
+    _valueRangeObservable = new Rx.BehaviorSubject<IValueRange>(null);
     _lastQueryObservable = new Rx.BehaviorSubject<any>(null);
     _tweetObservable = new Rx.BehaviorSubject<Array<ITransaction>>(null);
     _dateLimitObservable = new Rx.BehaviorSubject<any>(null);
@@ -124,6 +126,10 @@ module gogeo {
       return this._dateRangeObservable;
     }
 
+    get dateValueObsersable():Rx.Observable<IValueRange> {
+      return this._valueRangeObservable;
+    }
+
     get somethingTermsObservable():Rx.BehaviorSubject<string[]> {
       return this._somethingTermsObservable;
     }
@@ -154,7 +160,7 @@ module gogeo {
 
     initialize() {
       Rx.Observable
-        .merge<any>(this._geomSpaceObservable, this._hashtagFilterObservable, this._dateRangeObservable)
+        .merge<any>(this._geomSpaceObservable, this._hashtagFilterObservable, this._dateRangeObservable, this._valueRangeObservable)
         .throttle(400)
         .subscribe(() => this.search());
 
@@ -367,6 +373,17 @@ module gogeo {
       this._dateRangeObservable.onNext(dateRange);
     }
 
+    updateValueRange(min: number, max: number) {
+      var valueRange: IValueRange = null;
+
+      if (min || max) {
+        valueRange = { min: min, max: max };
+      }
+
+      this._lastValueRange = valueRange;
+      this._valueRangeObservable.onNext(valueRange);
+    }
+
     updateMapCenter(mapCenter: L.LatLng) {
       this._lastMapCenter = mapCenter;
     }
@@ -531,10 +548,15 @@ module gogeo {
         query.filterByDateRange(this._lastDateRange);
       }
 
+      if (this._lastValueRange) {
+        query.filterByValueRange(this._lastValueRange);
+      }
+
       if (this._lastTypeEstab) {
         query.filterByTypeEstab(this._lastTypeEstab);
       }
 
+      console.log("query", JSON.stringify(query, null, 2))
       return query;
     }
   }
