@@ -2448,8 +2448,8 @@ a{color:#168fae}
 .numberpad{font-family:"Titillium Web";font-size:18pt;color:#1cb4db}
 .numberpad-big{font-size:28pt}
 .dashboard-panel .dashboard-top-panel .navbar .navbar-brand{margin-right:16px}
-.dashboard-panel .dashboard-map-panel{width:73%;height:100%;position:relative;float:left}
-.dashboard-panel .dashboard-right-panel{overflow-y:auto;display:block;position:relative;float:right;background-color:#f0f0f0;margin:0;padding:0;z-index:2;width:27%;height:100%;border-left:solid 2px #1cb4db}
+.dashboard-panel .dashboard-map-panel{width:67%;height:100%;position:relative;float:left}
+.dashboard-panel .dashboard-right-panel{overflow-y:auto;display:block;position:relative;float:right;background-color:#fff;margin:0;padding:0;z-index:2;width:33%;height:100%;border-left:solid 2px #fff}
 .dashboard-header .navbar{padding-top:5px}
 .dashboard-header .navbar-dashboard{background-color:transparent;border:none}
 .dashboard-header .navbar-header .navbar-brand{width:auto;height:auto;margin:0;padding:0 10px 0 0}
@@ -2481,6 +2481,12 @@ a{color:#168fae}
 .search-input-container input{height:45px!important}
 .hashtag-marker-button{padding-top:5px!important}
 .btn-warning,.btn-warning:hover{margin-top:-56px;font-size:14px;color:#2F383A;font-weight:600;line-height:28px;background:#ffe341;border:1px solid transparent}
+.content-period,.dashboard-details-title,.label-period{font-family:"Titillium Web";font-size:16px;line-height:21px}
+.dashboard-details-title{font-weight:600;color:#4A4A4A}
+.content-period,.label-period{font-weight:400}
+.content-period{color:#000}
+.label-period{color:#1CB4DB;margin-top:1px}
+.summary-container{background-color:#f0f0f0}
 slider,slider span{position:absolute;display:inline-block}
 slider{height:22px;width:200px;vertical-align:middle;top:-10px;margin-left:4px}
 slider span{white-space:nowrap}
@@ -2549,22 +2555,6 @@ slider>input{max-width:100%}
 [zoom>=7][zoom<=7]{marker-width:3.5}
 [zoom>=8][zoom<=12]{marker-width:4.5}
 [zoom>=13][zoom<=22]{marker-width:5.5}
-.thematic-legend ul{background-color:transparent}
-.thematic-legend ul li{cursor:pointer;margin:0 3px}
-.thematic-legend ul li.restaurantes{background-color:#fff;color:#2166AC}
-.thematic-legend ul li.restaurantes.disabled{background-color:#2166AC;color:#EEE}
-.thematic-legend ul li.informatica{background-color:#fff;color:#4A3BAE}
-.thematic-legend ul li.informatica.disabled{background-color:#4A3BAE;color:#EEE}
-.thematic-legend ul li.alimentos{background-color:#fff;color:#17AB09}
-.thematic-legend ul li.alimentos.disabled{background-color:#17AB09;color:#EEE}
-.thematic-legend ul li.construcao{background-color:#fff;color:#D81E1E}
-.thematic-legend ul li.construcao.disabled{background-color:#D81E1E;color:#EEE}
-.thematic-legend ul li.farmaceutico{background-color:#fff;color:#1E3E4A}
-.thematic-legend ul li.farmaceutico.disabled{background-color:#1E3E4A;color:#EEE}
-.thematic-legend ul li.combustiveis{background-color:#fff;color:#E34E0C}
-.thematic-legend ul li.combustiveis.disabled{background-color:#E34E0C;color:#EEE}
-.thematic-legend ul li.hoteis{background-color:#fff;color:#838181}
-.thematic-legend ul li.hoteis.disabled{background-color:#838181;color:#EEE}
 .container-pie-chart{border-top:1px dashed #A1A1A1;margin-top:10px}
 .tick line{display:none}
-date-histogram-chart nvd3 svg{height:370px!important;width:500px!important;position:relative;left:-40px}
+date-histogram-chart nvd3 svg{height:370px!important;position:relative;left:-65px}

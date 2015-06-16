@@ -11,6 +11,7 @@ module gogeo {
     morning: number = 0;
     afternoon: number = 0;
     night: number = 0;
+    totalTransactions: IHashtagResult = null;
 
     constructor(
       private $scope:   ng.IScope,
@@ -21,6 +22,13 @@ module gogeo {
         .where(q => q != null)
         .throttle(400)
         .subscribeAndApply(this.$scope, (query) => this.getSummary());
+
+      this.service.hashtagResultObservable
+                  .subscribeAndApply(this.$scope, result => this.handleResult(result));
+    }
+
+    handleResult(result : IHashtagResult) {
+      this.totalTransactions = result;
     }
 
     getSummary() {

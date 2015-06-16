@@ -12,7 +12,7 @@ module gogeo {
             DashboardService.$named
         ];
 
-        hashtagResult: IHashtagResult = null;
+        // hashtagResult: IHashtagResult = null;
         selectedHashtag: IBucket = null;
 
         constructor(private $scope: ng.IScope,
@@ -22,16 +22,16 @@ module gogeo {
         }
 
         initialize() {
-            this.service.hashtagResultObservable
-                .subscribeAndApply(this.$scope, result => this.handleResult(result));
+            // this.service.hashtagResultObservable
+            //     .subscribeAndApply(this.$scope, result => this.handleResult(result));
         }
 
-        handleResult(result : IHashtagResult) {
-            this.hashtagResult = result;
-            if (this.selectedHashtag) {
-                this.selectedHashtag.doc_count = result.doc_total;
-            }
-        }
+        // handleResult(result : IHashtagResult) {
+        //     this.hashtagResult = result;
+        //     if (this.selectedHashtag) {
+        //         this.selectedHashtag.doc_count = result.doc_total;
+        //     }
+        // }
 
         unselect() {
             this.selectedHashtag = null;

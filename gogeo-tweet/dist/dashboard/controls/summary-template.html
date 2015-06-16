@@ -1,50 +1,36 @@
-<!-- <div class="row">
-  <div class="col-md-7">
-    <h6 class="text-muted">Total tweets on mapview</h6>
-    <span class="numberpad" ng-show="!details.service.isLoading()">
-      {{ details.hashtagResult.doc_total | number:0 }}
-    </span>
-    <span ng-show="details.service.isLoading()">
-      <i class="loading fa fa-spinner fa-pulse fa-2x"></i>
-    </span>
-  </div>
-</div> -->
-
-<!-- <div class="row">
-  <div class="col-md-6">
-    <h6 class="text-muted">Crédito</h6>
-    <span class="numberpad" ng-show="!summary.service.isLoading()">
-      {{summary.credit | currency: "R$"}}
-    </span>
-  </div>
-  <div class="col-md-6">
-    <h6 class="text-muted">Débito</h6>
-    <span class="numberpad" ng-show="!summary.service.isLoading()">
-      {{summary.debit | currency: "R$"}}
-    </span>
-  </div>
-</div> -->
 
 <div class="row">
-  <div class="col-md-6">
-    <h6 class="text-muted">Manhã</h6>
-    <span class="numberpad" ng-show="!summary.service.isLoading()">
-      {{summary.morning | currency: "R$"}}
-    </span>
-  </div>
-  <div class="col-md-6">
-    <h6 class="text-muted">Tarde</h6>
-    <span class="numberpad" ng-show="!summary.service.isLoading()">
-      {{summary.afternoon | currency: "R$"}}
-    </span>
+  <div class="col-md-12">
+    <h6 class="dashboard-details-title">FATURAMENTO (R$) DIÁRIO</h6>
   </div>
 </div>
 
 <div class="row">
-  <div class="col-md-6">
-    <h6 class="text-muted">Noite</h6>
-    <span class="numberpad" ng-show="!summary.service.isLoading()">
+  <div class="col-md-7">
+    <span class="content-period" ng-show="!summary.service.isLoading()">
+      {{summary.morning | currency: "R$"}}
+    </span>
+    <h6 class="label-period">MANHÃ</h6>
+  </div>
+  <div class="col-md-5">
+    <span class="content-period" ng-show="!summary.service.isLoading()">
+      {{summary.afternoon | currency: "R$"}}
+    </span>
+    <h6 class="label-period">TARDE</h6>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-7">
+    <span class="content-period" ng-show="!summary.service.isLoading()">
       {{summary.night | currency: "R$"}}
     </span>
+    <h6 class="label-period">NOITE</h6>
+  </div>
+  <div class="col-md-5">
+      <span class="content-period" ng-show="!details.service.isLoading()">
+          {{ summary.totalTransactions.doc_total | number:0 }}
+      </span>
+      <h6 class="label-period">TRANSAÇÕES NO MAPA</h6>
   </div>
 </div>

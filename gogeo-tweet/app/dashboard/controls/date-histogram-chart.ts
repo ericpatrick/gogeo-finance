@@ -5,6 +5,7 @@ module gogeo {
     static $inject = [
       "$scope",
       "$timeout",
+      "$window",
       DashboardService.$named
     ];
 
@@ -14,8 +15,8 @@ module gogeo {
     options: any = {
       chart: {
         type: 'multiChart',
-        height: 330,
-        width: 400,
+        height: 320,
+        // width: 300,
         color: [
           "#1f77b4",
           "#2ca02c"
@@ -59,20 +60,28 @@ module gogeo {
       title: {
         enable: true,
         text: "TRANSAÇÕES/PERÍODO",
-        class: "h4",
+        class: "dashboard-details-title",
         css: {
           // width: "500px",
           // padding: "500px",
           textAlign: "left",
           position: "relative",
-          top: "20px"
+          top: "20px",
+          margin: "0px 0px 30px"
         }
       }
+    };
+
+    widthHash: any = {
+      1280: 350,
+      1366: 370,
+      1920: 550
     };
 
     constructor(
       private $scope:   ng.IScope,
       private $timeout: ng.ITimeoutService,
+      private $window:  ng.IWindowService,
       private service:  DashboardService) {
 
       this.service.queryObservable
@@ -94,6 +103,20 @@ module gogeo {
           values: []
         }
       ];
+
+      this.$scope.$watch(() => {
+        var width = this.$window.innerWidth;
+        var chartWidth = this.widthHash[width];
+
+        if (!chartWidth) {
+          chartWidth = parseInt((width / 3).toFixed(0)) - 80;
+        }
+
+        this.options.chart.width = chartWidth;
+        var svgWidth = chartWidth + 80;
+        console.log("-------------", svgWidth);
+        $("date-histogram-chart nvd3 svg").css("width", svgWidth + "px")
+      });
     }
 
     getDataChart() {

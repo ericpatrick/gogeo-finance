@@ -40387,20 +40387,19 @@ var gogeo;
             this.$interval = $interval;
             this.$filter = $filter;
             this.service = service;
-            this.hashtagResult = null;
+            // hashtagResult: IHashtagResult = null;
             this.selectedHashtag = null;
         }
         DashboardDetailsController.prototype.initialize = function () {
-            var _this = this;
-            this.service.hashtagResultObservable
-                .subscribeAndApply(this.$scope, function (result) { return _this.handleResult(result); });
+            // this.service.hashtagResultObservable
+            //     .subscribeAndApply(this.$scope, result => this.handleResult(result));
         };
-        DashboardDetailsController.prototype.handleResult = function (result) {
-            this.hashtagResult = result;
-            if (this.selectedHashtag) {
-                this.selectedHashtag.doc_count = result.doc_total;
-            }
-        };
+        // handleResult(result : IHashtagResult) {
+        //     this.hashtagResult = result;
+        //     if (this.selectedHashtag) {
+        //         this.selectedHashtag.doc_count = result.doc_total;
+        //     }
+        // }
         DashboardDetailsController.prototype.unselect = function () {
             this.selectedHashtag = null;
             this.service.updateHashtagBucket(null);
@@ -41235,10 +41234,11 @@ var gogeo;
 var gogeo;
 (function (gogeo) {
     var DateHistogramChartController = (function () {
-        function DateHistogramChartController($scope, $timeout, service) {
+        function DateHistogramChartController($scope, $timeout, $window, service) {
             var _this = this;
             this.$scope = $scope;
             this.$timeout = $timeout;
+            this.$window = $window;
             this.service = service;
             this.SIMPLE_DATE_PATTERN = "YYYY-MM-dd";
             // buckets: Array<IDateHistogram> = [];
@@ -41246,8 +41246,8 @@ var gogeo;
             this.options = {
                 chart: {
                     type: 'multiChart',
-                    height: 330,
-                    width: 400,
+                    height: 320,
+                    // width: 300,
                     color: [
                         "#1f77b4",
                         "#2ca02c"
@@ -41291,15 +41291,21 @@ var gogeo;
                 title: {
                     enable: true,
                     text: "TRANSAÇÕES/PERÍODO",
-                    class: "h4",
+                    class: "dashboard-details-title",
                     css: {
                         // width: "500px",
                         // padding: "500px",
                         textAlign: "left",
                         position: "relative",
-                        top: "20px"
+                        top: "20px",
+                        margin: "0px 0px 30px"
                     }
                 }
+            };
+            this.widthHash = {
+                1280: 350,
+                1366: 370,
+                1920: 550
             };
             this.service.queryObservable
                 .where(function (q) { return q != null; })
@@ -41319,6 +41325,17 @@ var gogeo;
                     values: []
                 }
             ];
+            this.$scope.$watch(function () {
+                var width = _this.$window.innerWidth;
+                var chartWidth = _this.widthHash[width];
+                if (!chartWidth) {
+                    chartWidth = parseInt((width / 3).toFixed(0)) - 80;
+                }
+                _this.options.chart.width = chartWidth;
+                var svgWidth = chartWidth + 80;
+                console.log("-------------", svgWidth);
+                $("date-histogram-chart nvd3 svg").css("width", svgWidth + "px");
+            });
         }
         DateHistogramChartController.prototype.getDataChart = function () {
             var _this = this;
@@ -41344,6 +41361,7 @@ var gogeo;
         DateHistogramChartController.$inject = [
             "$scope",
             "$timeout",
+            "$window",
             gogeo.DashboardService.$named
         ];
         return DateHistogramChartController;
@@ -41376,11 +41394,17 @@ var gogeo;
             this.morning = 0;
             this.afternoon = 0;
             this.night = 0;
+            this.totalTransactions = null;
             this.service.queryObservable
                 .where(function (q) { return q != null; })
                 .throttle(400)
                 .subscribeAndApply(this.$scope, function (query) { return _this.getSummary(); });
+            this.service.hashtagResultObservable
+                .subscribeAndApply(this.$scope, function (result) { return _this.handleResult(result); });
         }
+        SummaryController.prototype.handleResult = function (result) {
+            this.totalTransactions = result;
+        };
         SummaryController.prototype.getSummary = function () {
             var _this = this;
             this.service.getStatsAggregationSummary().success(function (result) {
@@ -41425,15 +41449,21 @@ var gogeo;
 var gogeo;
 (function (gogeo) {
     var TransactionsChartController = (function () {
-        function TransactionsChartController($scope, $timeout, service) {
+        function TransactionsChartController($scope, $timeout, $window, service) {
             var _this = this;
             this.$scope = $scope;
             this.$timeout = $timeout;
+            this.$window = $window;
             this.service = service;
             this.buckets = [];
             this.typeEstabBuckets = [];
             this.options = {};
             this.typeEstabOptions = {};
+            this.widthHash = {
+                1280: 380,
+                1366: 400,
+                1920: 580
+            };
             angular.element(document).ready(function () {
                 _this.getDataChart();
             });
@@ -41441,6 +41471,15 @@ var gogeo;
                 .where(function (q) { return q != null; })
                 .throttle(400)
                 .subscribeAndApply(this.$scope, function (query) { return _this.getDataChart(); });
+            this.$scope.$watch(function () {
+                var width = _this.$window.innerWidth;
+                var chartWidth = _this.widthHash[width];
+                if (!chartWidth) {
+                    chartWidth = parseInt((width / 3).toFixed(0)) - 50;
+                }
+                _this.options.chart.width = chartWidth;
+                _this.typeEstabOptions.chart.width = chartWidth;
+            });
         }
         TransactionsChartController.prototype.getDataChart = function () {
             var _this = this;
@@ -41477,8 +41516,8 @@ var gogeo;
                 chart: {
                     type: 'pieChart',
                     donut: true,
-                    height: 230,
-                    width: 460,
+                    height: 400,
+                    width: 500,
                     // x: function(d){return d.key;},
                     // y: function(d){return d.value;},
                     showLabels: false,
@@ -41494,7 +41533,7 @@ var gogeo;
                 title: {
                     enable: true,
                     text: "SHARE DE TIPOS DE PAGAMENTOS",
-                    class: "h4",
+                    class: "dashboard-details-title",
                     css: {
                         // width: "500px",
                         // padding: "500px",
@@ -41508,10 +41547,11 @@ var gogeo;
             this.typeEstabOptions["chart"]["x"] = function (d) {
                 return self.getReducedName(d.x);
             };
-            this.typeEstabOptions["chart"]["color"] = function (d, i) {
-                var colors = ["#2166AC", "#4A3BAE", "#17AB09", "#D81E1E", "#1E3E4A", "#E34E0C", "#838181"];
-                return colors[i % colors.length];
-            };
+            // this.typeEstabOptions["chart"]["color"] = function(d, i) {
+            //     var colors = [ "#2166AC", "#4A3BAE", "#17AB09", "#D81E1E", "#1E3E4A", "#E34E0C", "#838181" ];
+            //       return colors[i % colors.length];
+            // };
+            delete this.typeEstabOptions["chart"]["color"];
             this.typeEstabOptions["title"]["text"] = "SHARE DE TIPOS DE ESTABELECIMENTOS";
         };
         TransactionsChartController.prototype.getReducedName = function (key) {
@@ -41529,6 +41569,7 @@ var gogeo;
         TransactionsChartController.$inject = [
             "$scope",
             "$timeout",
+            "$window",
             gogeo.DashboardService.$named
         ];
         return TransactionsChartController;

@@ -5,6 +5,7 @@ module gogeo {
     static $inject = [
       "$scope",
       "$timeout",
+      "$window",
       DashboardService.$named
     ];
 
@@ -12,10 +13,16 @@ module gogeo {
     typeEstabBuckets: Array<any> = [];
     options: any = {};
     typeEstabOptions: any = {};
+    widthHash: any = {
+      1280: 380,
+      1366: 400,
+      1920: 580
+    };
 
     constructor(
       private $scope:   ng.IScope,
       private $timeout: ng.ITimeoutService,
+      private $window:  ng.IWindowService,
       private service:  DashboardService) {
 
       angular.element(document).ready(() => {
@@ -27,6 +34,18 @@ module gogeo {
         .where(q => q != null)
         .throttle(400)
         .subscribeAndApply(this.$scope, (query) => this.getDataChart());
+
+      this.$scope.$watch(() => {
+        var width = this.$window.innerWidth;
+        var chartWidth = this.widthHash[width];
+
+        if (!chartWidth) {
+          chartWidth = parseInt((width / 3).toFixed(0)) - 50;
+        }
+
+        this.options.chart.width = chartWidth;
+        this.typeEstabOptions.chart.width = chartWidth;
+      });
     }
 
     getDataChart() {
@@ -88,8 +107,8 @@ module gogeo {
         chart: {
           type: 'pieChart',
           donut: true,
-          height: 230,
-          width: 460,
+          height: 400,
+          width: 500,
           // x: function(d){return d.key;},
           // y: function(d){return d.value;},
           showLabels: false,
@@ -109,7 +128,7 @@ module gogeo {
         title: {
           enable: true,
           text: "SHARE DE TIPOS DE PAGAMENTOS",
-          class: "h4",
+          class: "dashboard-details-title",
           css: {
             // width: "500px",
             // padding: "500px",
@@ -126,10 +145,12 @@ module gogeo {
           return self.getReducedName(d.x);
       };
 
-      this.typeEstabOptions["chart"]["color"] = function(d, i) {
-          var colors = [ "#2166AC", "#4A3BAE", "#17AB09", "#D81E1E", "#1E3E4A", "#E34E0C", "#838181" ];
-            return colors[i % colors.length];
-      };
+      // this.typeEstabOptions["chart"]["color"] = function(d, i) {
+      //     var colors = [ "#2166AC", "#4A3BAE", "#17AB09", "#D81E1E", "#1E3E4A", "#E34E0C", "#838181" ];
+      //       return colors[i % colors.length];
+      // };
+
+      delete this.typeEstabOptions["chart"]["color"]
 
       this.typeEstabOptions["title"]["text"] = "SHARE DE TIPOS DE ESTABELECIMENTOS";
     }
