@@ -43,7 +43,7 @@ module gogeo {
           tickFormat: function(d) {
             return (d / 1000).toFixed(2);
           },
-          axisLabelDistance: 30,
+          axisLabelDistance: 20,
           width: 90,
           margin: {
             right: 70
@@ -73,9 +73,9 @@ module gogeo {
     };
 
     widthHash: any = {
-      1280: 350,
-      1366: 370,
-      1920: 550
+      1280: 325,
+      1366: 345,
+      1920: 525
     };
 
     constructor(
@@ -109,7 +109,7 @@ module gogeo {
         var chartWidth = this.widthHash[width];
 
         if (!chartWidth) {
-          chartWidth = parseInt((width / 3).toFixed(0)) - 80;
+          chartWidth = parseInt((width / 3).toFixed(0)) - 105;
         }
 
         this.options.chart.width = chartWidth;

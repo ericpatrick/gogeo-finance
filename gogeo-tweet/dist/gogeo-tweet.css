@@ -2441,6 +2441,7 @@ body,html{height:100%;min-height:100%}
 .jumbotron h1{font-size:48px;line-height:73px;font-weight:600}
 .jumbotron p{font-size:36px;line-height:55px}
 .jumbotron .btn-primary{font-size:24px;line-height:36px;font-weight:600;text-transform:uppercase;padding:21px 85px;margin-top:25px;border-radius:4px}
+.daterange input.form-control{width:100px;max-width:100px}
 @font-face{font-family:"Titillium Web",sans-serif}
 body,h1,h2,h3,h4,h5,h6{font-family:"Titillium Web"!important}
 a{color:#168fae}
@@ -2581,5 +2582,4 @@ slider>input{max-width:100%}
 .thematic-legend ul li.hoteis.disabled{background-color:#838181;color:#EEE}
 .container-pie-chart{border-top:1px dashed #A1A1A1;margin-top:10px}
 .tick line{display:none}
-date-histogram-chart nvd3 svg{height:370px!important;position:relative;left:-60px}
-.daterange input.form-control{width:100px;max-width:100px}
+date-histogram-chart nvd3 svg{height:370px!important;position:relative;left:-45px}

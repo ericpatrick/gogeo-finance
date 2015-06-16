@@ -40,7 +40,7 @@ module gogeo {
         var chartWidth = this.widthHash[width];
 
         if (!chartWidth) {
-          chartWidth = parseInt((width / 3).toFixed(0)) - 50;
+          chartWidth = parseInt((width / 3).toFixed(0)) - 100;
         }
 
         this.options.chart.width = chartWidth;
@@ -107,14 +107,14 @@ module gogeo {
         chart: {
           type: 'pieChart',
           donut: true,
-          height: 400,
-          width: 500,
+          height: 350,
+          width: 450,
           // x: function(d){return d.key;},
           // y: function(d){return d.value;},
           showLabels: false,
           transitionDuration: 500,
           labelThreshold: 0.01,
-          showLegend: false,
+          showLegend: true,
           color: function (d, i) {
             var colors = [ "#FF7F0E", "#4393C3" ];
             return colors[i % colors.length];
@@ -134,7 +134,8 @@ module gogeo {
             // padding: "500px",
             textAlign: "left",
             position: "relative",
-            top: "20px"
+            top: "20px",
+            margin: "0px 0px 30px"
           }
         }
       };
