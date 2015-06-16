@@ -2441,7 +2441,6 @@ body,html{height:100%;min-height:100%}
 .jumbotron h1{font-size:48px;line-height:73px;font-weight:600}
 .jumbotron p{font-size:36px;line-height:55px}
 .jumbotron .btn-primary{font-size:24px;line-height:36px;font-weight:600;text-transform:uppercase;padding:21px 85px;margin-top:25px;border-radius:4px}
-.daterange input.form-control{width:100px;max-width:100px}
 @font-face{font-family:"Titillium Web",sans-serif}
 body,h1,h2,h3,h4,h5,h6{font-family:"Titillium Web"!important}
 a{color:#168fae}
@@ -2485,7 +2484,7 @@ a{color:#168fae}
 .dashboard-details-title{font-weight:600;color:#4A4A4A}
 .content-period,.label-period{font-weight:400}
 .content-period{color:#000}
-.label-period{color:#1CB4DB;margin-top:1px}
+.label-period{color:#1CB4DB;margin-bottom:1px}
 .summary-container{background-color:#f0f0f0}
 slider,slider span{position:absolute;display:inline-block}
 slider{height:22px;width:200px;vertical-align:middle;top:-10px;margin-left:4px}
@@ -2498,6 +2497,7 @@ slider span.pointer:after{content:'';background-color:#2C3B44;width:6px;height:6
 slider span.pointer:hover:after{background-color:#000}
 slider span.pointer.active:after{background-color:#FF5C17}
 slider span.bubble{cursor:default;top:-20px;padding:1px 3px;font-size:.8em;font-family:sans-serif}
+.popup-content,.popup-content-client,.popup-content-value,.popup-label{font-family:"Titillium Web"}
 slider span.bubble.selection{top:15px}
 slider span.bubble.limit{color:grey}
 slider span.bar.unselected{width:0;z-index:1;background:#fff}
@@ -2518,17 +2518,25 @@ slider>input{max-width:100%}
 .marker-popup{display:block;width:auto;height:auto;position:absolute}
 .marker-popup .marker-content{background:#F5F5F5;width:455px;height:355px;display:block;position:relative;margin:0;padding:0;box-shadow:0 10px 5px 0 rgba(0,0,0,.3)}
 .marker-popup .marker-content .close{margin-right:14px;margin-top:10px}
-.marker-popup .marker-content .mc-tweet-user{font-weight:400;font-size:14px;color:#878787;line-height:20px;display:block;position:relative;float:left;width:400px;height:auto;margin:20px 0 20px 20px;padding:0}
+.marker-popup .marker-content .mc-tweet-user{font-weight:400;font-size:14px;line-height:20px;display:block;position:relative;float:left;width:400px;height:auto;margin:20px 0 20px 20px;padding:0}
 .marker-popup .marker-content .mc-tweet-user p,.marker-popup .marker-content .mc-tweet-user span{padding:0;margin:0;width:100%}
 .marker-popup .marker-content .mc-tweet-user a{color:#6DBFE3;padding:0;margin:0}
 .marker-popup .marker-content .mc-tweet-user label{font-weight:400;margin-top:10px;width:100%}
-.marker-popup .marker-content .mc-tweet-msg{background:#FFF;padding:12px 12px 0;font-weight:400;font-size:14px;color:#868686;display:block;float:left;width:100%;height:220px}
+.marker-popup .marker-content .mc-tweet-msg{background:#FFF;padding:12px 12px 0;font-weight:400;font-size:14px;display:block;float:left;width:100%;height:213px}
 .marker-popup .marker-content .mc-tweet-msg label{line-height:21.33px}
-.marker-popup .marker-content .mc-tweet-msg p{color:grey;line-height:25.2px;word-wrap:break-word;margin:0}
+.marker-popup .marker-content .mc-tweet-msg p{line-height:25.2px;word-wrap:break-word;margin:0}
 .marker-popup .marker-content .marker-view{width:37px;height:48px;position:absolute;display:block;left:50%;bottom:-32px;margin-left:-18.5px}
 .leaflet-popup-content{padding:0}
 .loading{color:#1CB4DB}
 .marker-popup .marker-content .mc-weet-thumb{float:left;margin:20px;padding:0}
+.popup-label{font-weight:lighter!important;font-size:12px!important;line-height:19px!important;color:#333!important}
+.popup-content,.popup-content-client{font-weight:400}
+.popup-content{font-size:14px!important;line-height:21px!important;color:#4A4A4A!important}
+.popup-content-client,.popup-content-value{font-size:18px!important;line-height:27px!important;color:#4A4A4A}
+.popup-content-value{font-weight:700}
+.popup-content-status-approved,.popup-content-status-blocked{font-family:"Titillium Web";font-weight:600;font-size:14px!important;line-height:21px!important}
+.popup-content-status-approved{color:#417505}
+.popup-content-status-blocked{color:#500}
 .icon-button{background-color:#fff;border-radius:3.6rem;cursor:pointer;display:inline-block;font-size:2rem;height:3.6rem;line-height:3.6rem;margin:0 5px;position:relative;text-align:center;user-select:none;width:3.6rem}
 .icon-button span{border-radius:0;display:block;height:0;left:50%;margin:0;top:50%;transition:all .3s;width:0}
 .icon-button i,.icon-button span{position:absolute;-webkit-transition:all .3s;-moz-transition:all .3s;-o-transition:all .3s}
@@ -2555,6 +2563,23 @@ slider>input{max-width:100%}
 [zoom>=7][zoom<=7]{marker-width:3.5}
 [zoom>=8][zoom<=12]{marker-width:4.5}
 [zoom>=13][zoom<=22]{marker-width:5.5}
+.thematic-legend ul{background-color:transparent}
+.thematic-legend ul li{cursor:pointer;margin:0 3px}
+.thematic-legend ul li.restaurantes{background-color:#fff;color:#2166AC}
+.thematic-legend ul li.restaurantes.disabled{background-color:#2166AC;color:#EEE}
+.thematic-legend ul li.informatica{background-color:#fff;color:#4A3BAE}
+.thematic-legend ul li.informatica.disabled{background-color:#4A3BAE;color:#EEE}
+.thematic-legend ul li.alimentos{background-color:#fff;color:#17AB09}
+.thematic-legend ul li.alimentos.disabled{background-color:#17AB09;color:#EEE}
+.thematic-legend ul li.construcao{background-color:#fff;color:#D81E1E}
+.thematic-legend ul li.construcao.disabled{background-color:#D81E1E;color:#EEE}
+.thematic-legend ul li.farmaceutico{background-color:#fff;color:#1E3E4A}
+.thematic-legend ul li.farmaceutico.disabled{background-color:#1E3E4A;color:#EEE}
+.thematic-legend ul li.combustiveis{background-color:#fff;color:#E34E0C}
+.thematic-legend ul li.combustiveis.disabled{background-color:#E34E0C;color:#EEE}
+.thematic-legend ul li.hoteis{background-color:#fff;color:#838181}
+.thematic-legend ul li.hoteis.disabled{background-color:#838181;color:#EEE}
 .container-pie-chart{border-top:1px dashed #A1A1A1;margin-top:10px}
 .tick line{display:none}
-date-histogram-chart nvd3 svg{height:370px!important;position:relative;left:-65px}
+date-histogram-chart nvd3 svg{height:370px!important;position:relative;left:-60px}
+.daterange input.form-control{width:100px;max-width:100px}

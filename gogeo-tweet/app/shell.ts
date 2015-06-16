@@ -121,6 +121,19 @@ module gogeo {
       return [ "city", "state" ];
     }
 
+    static getReducedTypeEstabName(): any {
+      // TODO: Export this to development/deployment config file
+      return {
+        "Restaurantes e outros serviços de alimentação e bebidas": "restaurantes",
+        "Comércio varejista de equipamentos de informática e comunicação; equipamentos e artigos de uso doméstico": "informática",
+        "Comércio varejista de produtos alimentícios, bebidas e fumo": "alimentos",
+        "Comércio varejista de material de construção": "construção",
+        "Comércio varejista de produtos farmacêuticos, perfumaria e cosméticos e artigos médicos, ópticos e ortopédicos": "farmacêutico",
+        "Comércio varejista de combustíveis para veículos automotores": "combustíveis",
+        "Hotéis e similares": "hotéis"
+      };
+    }
+
     static tweetFields(): Array<string> {
       // TODO: Export this to development/deployment config file
       return [

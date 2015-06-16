@@ -556,7 +556,6 @@ module gogeo {
         query.filterByTypeEstab(this._lastTypeEstab);
       }
 
-      console.log("query", JSON.stringify(query, null, 2))
       return query;
     }
   }

@@ -600,6 +600,11 @@ module gogeo {
 
             if (!this.tweetResult) {
                 return;
+            } else {
+                var reducedName = Configuration.getReducedTypeEstabName();
+                console.log("----------", this.tweetResult);
+                var typeEstab = this.tweetResult["typeestab"];
+                this.tweetResult["typeestab"] = reducedName[typeEstab]
             }
 
             if (this.popup == null) {

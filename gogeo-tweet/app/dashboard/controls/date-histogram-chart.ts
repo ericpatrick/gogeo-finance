@@ -39,13 +39,6 @@ module gogeo {
           axisLabelDistance: 10
         },
         yAxis1: {
-          axisLabel: "Quantidade (k)",
-          tickFormat: function(d) {
-            return (d / 1000).toFixed(2);
-          },
-          axisLabelDistance: 30
-        },
-        yAxis2: {
           axisLabel: "Valor (k)",
           tickFormat: function(d) {
             return (d / 1000).toFixed(2);
@@ -55,6 +48,13 @@ module gogeo {
           margin: {
             right: 70
           }
+        },
+        yAxis2: {
+          axisLabel: "Quantidade (k)",
+          tickFormat: function(d) {
+            return (d / 1000).toFixed(2);
+          },
+          axisLabelDistance: 30
         }
       },
       title: {
@@ -67,7 +67,7 @@ module gogeo {
           textAlign: "left",
           position: "relative",
           top: "20px",
-          margin: "0px 0px 30px"
+          margin: "0px 0px 30px -25px"
         }
       }
     };
@@ -91,13 +91,13 @@ module gogeo {
 
       this.buckets = [
         {
-          key: "Quantidade",
+          key: "R$",
           type: "line",
           yAxis: 1,
           values: []
         },
         {
-          key: "R$",
+          key: "Quantidade",
           type: "line",
           yAxis: 2,
           values: []
@@ -114,7 +114,6 @@ module gogeo {
 
         this.options.chart.width = chartWidth;
         var svgWidth = chartWidth + 80;
-        console.log("-------------", svgWidth);
         $("date-histogram-chart nvd3 svg").css("width", svgWidth + "px")
       });
     }
@@ -136,8 +135,8 @@ module gogeo {
           });
         });
 
-        this.buckets[0]["values"] = quantityValues;
-        this.buckets[1]["values"] = amountValues;
+        this.buckets[0]["values"] = amountValues;
+        this.buckets[1]["values"] = quantityValues;
       });
     }
   }

@@ -115,12 +115,12 @@ module gogeo {
           transitionDuration: 500,
           labelThreshold: 0.01,
           showLegend: false,
-          // donutRatio: 0.2,
           color: function (d, i) {
             var colors = [ "#FF7F0E", "#4393C3" ];
             return colors[i % colors.length];
           }
           // tooltipContent: function (key, y, e, graph) {
+          //   console.log("-----------", e);
           //   return '<h4 style="background-color: #F0F0F0; padding: 5px 0px 5px 10px; margin-top: 0px"><strong>' + key + '</strong></h4>' +
           //          '<div style="width: 140px"><center>R$' +  y + '</center></div>'
           // }
@@ -156,15 +156,7 @@ module gogeo {
     }
 
     getReducedName(key: string) {
-      var reducedNames = {
-        "Restaurantes e outros serviços de alimentação e bebidas": "restaurantes",
-        "Comércio varejista de equipamentos de informática e comunicação; equipamentos e artigos de uso doméstico": "informatica",
-        "Comércio varejista de produtos alimentícios, bebidas e fumo": "alimentos",
-        "Comércio varejista de material de construção": "construcao",
-        "Comércio varejista de produtos farmacêuticos, perfumaria e cosméticos e artigos médicos, ópticos e ortopédicos": "farmaceutico",
-        "Comércio varejista de combustíveis para veículos automotores": "combustiveis",
-        "Hotéis e similares": "hoteis"
-      };
+      var reducedNames = Configuration.getReducedTypeEstabName();
 
       return reducedNames[key]
     }

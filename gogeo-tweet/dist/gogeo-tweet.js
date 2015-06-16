@@ -109,6 +109,18 @@ var gogeo;
             // TODO: Export this to development/deployment config file
             return ["city", "state"];
         };
+        Configuration.getReducedTypeEstabName = function () {
+            // TODO: Export this to development/deployment config file
+            return {
+                "Restaurantes e outros serviços de alimentação e bebidas": "restaurantes",
+                "Comércio varejista de equipamentos de informática e comunicação; equipamentos e artigos de uso doméstico": "informática",
+                "Comércio varejista de produtos alimentícios, bebidas e fumo": "alimentos",
+                "Comércio varejista de material de construção": "construção",
+                "Comércio varejista de produtos farmacêuticos, perfumaria e cosméticos e artigos médicos, ópticos e ortopédicos": "farmacêutico",
+                "Comércio varejista de combustíveis para veículos automotores": "combustíveis",
+                "Hotéis e similares": "hotéis"
+            };
+        };
         Configuration.tweetFields = function () {
             // TODO: Export this to development/deployment config file
             return [
@@ -1325,7 +1337,6 @@ var gogeo;
             if (this._lastTypeEstab) {
                 query.filterByTypeEstab(this._lastTypeEstab);
             }
-            console.log("query", JSON.stringify(query, null, 2));
             return query;
         };
         DashboardService.$named = "dashboardService";
@@ -41106,6 +41117,12 @@ var gogeo;
             if (!this.tweetResult) {
                 return;
             }
+            else {
+                var reducedName = gogeo.Configuration.getReducedTypeEstabName();
+                console.log("----------", this.tweetResult);
+                var typeEstab = this.tweetResult["typeestab"];
+                this.tweetResult["typeestab"] = reducedName[typeEstab];
+            }
             if (this.popup == null) {
                 var options = {
                     closeButton: false,
@@ -41270,13 +41287,6 @@ var gogeo;
                         axisLabelDistance: 10
                     },
                     yAxis1: {
-                        axisLabel: "Quantidade (k)",
-                        tickFormat: function (d) {
-                            return (d / 1000).toFixed(2);
-                        },
-                        axisLabelDistance: 30
-                    },
-                    yAxis2: {
                         axisLabel: "Valor (k)",
                         tickFormat: function (d) {
                             return (d / 1000).toFixed(2);
@@ -41286,6 +41296,13 @@ var gogeo;
                         margin: {
                             right: 70
                         }
+                    },
+                    yAxis2: {
+                        axisLabel: "Quantidade (k)",
+                        tickFormat: function (d) {
+                            return (d / 1000).toFixed(2);
+                        },
+                        axisLabelDistance: 30
                     }
                 },
                 title: {
@@ -41298,7 +41315,7 @@ var gogeo;
                         textAlign: "left",
                         position: "relative",
                         top: "20px",
-                        margin: "0px 0px 30px"
+                        margin: "0px 0px 30px -25px"
                     }
                 }
             };
@@ -41313,13 +41330,13 @@ var gogeo;
                 .subscribeAndApply(this.$scope, function (query) { return _this.getDataChart(); });
             this.buckets = [
                 {
-                    key: "Quantidade",
+                    key: "R$",
                     type: "line",
                     yAxis: 1,
                     values: []
                 },
                 {
-                    key: "R$",
+                    key: "Quantidade",
                     type: "line",
                     yAxis: 2,
                     values: []
@@ -41333,7 +41350,6 @@ var gogeo;
                 }
                 _this.options.chart.width = chartWidth;
                 var svgWidth = chartWidth + 80;
-                console.log("-------------", svgWidth);
                 $("date-histogram-chart nvd3 svg").css("width", svgWidth + "px");
             });
         }
@@ -41354,8 +41370,8 @@ var gogeo;
                         y: item['sum']
                     });
                 });
-                _this.buckets[0]["values"] = quantityValues;
-                _this.buckets[1]["values"] = amountValues;
+                _this.buckets[0]["values"] = amountValues;
+                _this.buckets[1]["values"] = quantityValues;
             });
         };
         DateHistogramChartController.$inject = [
@@ -41524,7 +41540,6 @@ var gogeo;
                     transitionDuration: 500,
                     labelThreshold: 0.01,
                     showLegend: false,
-                    // donutRatio: 0.2,
                     color: function (d, i) {
                         var colors = ["#FF7F0E", "#4393C3"];
                         return colors[i % colors.length];
@@ -41555,15 +41570,7 @@ var gogeo;
             this.typeEstabOptions["title"]["text"] = "SHARE DE TIPOS DE ESTABELECIMENTOS";
         };
         TransactionsChartController.prototype.getReducedName = function (key) {
-            var reducedNames = {
-                "Restaurantes e outros serviços de alimentação e bebidas": "restaurantes",
-                "Comércio varejista de equipamentos de informática e comunicação; equipamentos e artigos de uso doméstico": "informatica",
-                "Comércio varejista de produtos alimentícios, bebidas e fumo": "alimentos",
-                "Comércio varejista de material de construção": "construcao",
-                "Comércio varejista de produtos farmacêuticos, perfumaria e cosméticos e artigos médicos, ópticos e ortopédicos": "farmaceutico",
-                "Comércio varejista de combustíveis para veículos automotores": "combustiveis",
-                "Hotéis e similares": "hoteis"
-            };
+            var reducedNames = gogeo.Configuration.getReducedTypeEstabName();
             return reducedNames[key];
         };
         TransactionsChartController.$inject = [

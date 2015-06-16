@@ -40,23 +40,30 @@
       <div class="mc-tweet-user">
         <div class="row">
           <div class="col-md-7">
-            <p>CLIENTE</p>
-            <p>{{ map.tweetResult['people'] }}</p>
+            <p class="popup-label">CLIENTE</p>
+            <p class="popup-content-client">{{ map.tweetResult['people'] }}</p>
           </div>
-          <div class="col-md-5">
-            <p>VALOR</p>
-            <p><strong>{{ map.tweetResult['value'] | currency: "R$" }}</strong></p>
+          <div class="col-md-5" style="padding-left: 25px">
+            <p class="popup-label">VALOR</p>
+            <p class="popup-content-value">{{ map.tweetResult['value'] | currency: "R$" }}</p>
           </div>
         </div>
-        <div style="padding-top: 15px; padding-right: 5px; font-size: 12px;">
+        <div style="padding-top: 15px; padding-right: 5px;">
           <div class="row">
             <div class="col-md-7">
-              <p>TRANSAÇÃO</p>
-              <p>{{ map.tweetResult['flag'] | capitalize:'first' }} / {{ map.tweetResult['typepay'] | capitalize:'first' }}</p>
+              <p class="popup-label">TRANSAÇÃO</p>
+              <p class="popup-content">{{ map.tweetResult['flag'] | capitalize:'first' }} / {{ map.tweetResult['typepay'] | capitalize:'first' }}</p>
             </div>
-            <div class="col-md-5">
-              <p>STATUS</p>
-              <p>Inexistente</p>
+            <div class="col-md-5" style="padding-left: 29px">
+              <p class="popup-label">STATUS</p>
+              <div ng-if="map.tweetResult['status'] == 'yes'">
+                <!-- code to render a large video block-->
+                <p class="popup-content-status-approved">Aprovada</p>
+              </div>
+              <div ng-if="map.tweetResult['status'] == 'no'">
+                <!-- code to render the regular video block -->
+                <p class="popup-content-status-blocked">Bloqueada</p>
+              </div>
             </div>
           </div>
         </div>
@@ -65,36 +72,33 @@
       <div class="mc-tweet-msg">
         <div class="row">
           <div class="col-md-7">
-            <!-- <p>{{ map.tweetResult['typeestab'] }}</p> -->
-            <p>{{ map.tweetResult['nameestab'] | lowercase | capitalize:'all' }}</p>
+            <p class="popup-label">{{ map.tweetResult['typeestab'] | uppercase }}</p>
+            <p class="popup-content">{{ map.tweetResult['nameestab'] | lowercase | capitalize:'all' }}</p>
           </div>
           <div class="col-md-5">
-            <p>EQUIPAMENTO</p>
-            <p>{{ map.tweetResult['payway'] }}</p>
+            <p class="popup-label">EQUIPAMENTO</p>
+            <p class="popup-content">{{ map.tweetResult['payway'] | capitalize:'all' }}</p>
           </div>
         </div>
         <div class="row">
           <div class="col-md-12">
-            <p>{{ map.tweetResult['cnpj'] }}</p>
+            <p class="popup-content">{{ map.tweetResult['cnpj'] }}</p>
           </div>
         </div>
-        <div style="padding-top: 15px; padding-right: 5px; font-size: 12px;">
+        <div style="padding-top: 15px; padding-right: 5px;">
           <div class="row">
             <div class="col-md-7">
-              <p>LOCALIZAÇÃO</p>
+              <p class="popup-label">LOCALIZAÇÃO</p>
             </div>
           </div>
           <div class="row">
             <div class="col-md-7">
-              <p>{{ map.tweetResult['address'] }}</p>
-            </div>
-            <div class="col-md-5">
-              <p>Inexistente</p>
+              <p class="popup-content">{{ map.tweetResult['address'] }}</p>
             </div>
           </div>
           <div class="row">
             <div class="col-md-7">
-              <p>{{ map.tweetResult['city'] }}, {{ map.tweetResult['state'] }}</p>
+              <p class="popup-content">{{ map.tweetResult['city'] }}, {{ map.tweetResult['state'] }}</p>
             </div>
           </div>
         </div>
