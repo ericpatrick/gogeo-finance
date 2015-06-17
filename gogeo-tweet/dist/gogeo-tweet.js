@@ -2173,8 +2173,8 @@ var gogeo;
                         attributionControl: false,
                         minZoom: 4,
                         maxZoom: 18,
-                        center: new L.LatLng(37.757836, -122.447041),
-                        zoom: 6,
+                        center: new L.LatLng(-15, -56),
+                        zoom: 5,
                         maptiks_id: "leaflet-map"
                     };
                     var mapContainerElement = element.find(".dashboard-map-container")[0];

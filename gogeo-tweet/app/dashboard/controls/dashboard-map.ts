@@ -674,8 +674,8 @@ module gogeo {
                         attributionControl: false,
                         minZoom: 4,
                         maxZoom: 18,
-                        center: new L.LatLng(37.757836, -122.447041), // San Francisco, CA
-                        zoom: 6,
+                        center: new L.LatLng(-15, -56), // San Francisco, CA
+                        zoom: 5,
                         maptiks_id: "leaflet-map"
                     };
 
