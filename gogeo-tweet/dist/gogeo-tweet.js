@@ -1513,7 +1513,7 @@ var gogeo;
             this.citiesToSearch = gogeo.Configuration.getPlacesToSearch();
         }
         DashboardController.prototype.formatRangeValue = function (value) {
-            return numeral(value).format('R$ 0,0[.]00');
+            return "R" + numeral(value).format('$ 0,0[.]00');
         };
         ;
         DashboardController.prototype.loadParams = function (result) {
@@ -2258,30 +2258,40 @@ var gogeo;
                     },
                     showValues: true,
                     transitionDuration: 500,
+                    tooltipContent: function (key, x, y, e, graph) {
+                        if (key.indexOf("R$") != -1) {
+                            y = "R$" + y;
+                        }
+                        else {
+                            key = "Quantidade";
+                        }
+                        return '<div> ' + x + ' (' + key + ')' + '</div>' +
+                            '<p style="width: 140px"><center>' + y + '</center></p>';
+                    },
                     xAxis: {
                         axisLabel: "Tempo",
                         tickFormat: function (d) {
-                            return moment(new Date(d)).format("DD/MM/YYYY");
+                            return moment(new Date(d)).format("DD/MM");
                         },
                         showMaxMin: true,
                         rotateLabels: 50,
                         axisLabelDistance: 10
                     },
                     yAxis1: {
-                        axisLabel: "Valor (k)",
+                        axisLabel: "Valor",
                         tickFormat: function (d) {
-                            return (d / 1000).toFixed(2);
+                            return numeral(d).format('0.00a').toUpperCase();
                         },
-                        axisLabelDistance: 20,
+                        axisLabelDistance: 25,
                         width: 90,
                         margin: {
                             right: 70
                         }
                     },
                     yAxis2: {
-                        axisLabel: "Quantidade (k)",
+                        axisLabel: "Quantidade",
                         tickFormat: function (d) {
-                            return (d / 1000).toFixed(2);
+                            return numeral(d).format('0.00a').toUpperCase();
                         },
                         axisLabelDistance: 30
                     }
@@ -2486,8 +2496,10 @@ var gogeo;
                 // var colors = [ "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
                 result.forEach(function (item) {
                     // console.log("********", item);
+                    var key = item['key'];
+                    key = key[0].toUpperCase() + key.slice(1);
                     _this.buckets.push({
-                        x: item['key'].toUpperCase(),
+                        x: key,
                         y: item['sum']
                     });
                 });
@@ -2498,7 +2510,7 @@ var gogeo;
                 result.forEach(function (item) {
                     // console.log("********", item);
                     _this.typeEstabBuckets.push({
-                        x: item['key'],
+                        x: item["key"],
                         y: item['sum']
                     });
                 });
@@ -2524,6 +2536,10 @@ var gogeo;
                     color: function (d, i) {
                         var colors = ["#FF7F0E", "#4393C3"];
                         return colors[i % colors.length];
+                    },
+                    tooltipContent: function (key, y, e, graph) {
+                        return '<div> ' + key + '</div>' +
+                            '<p style="width: 140px"><center>R$' + numeral(y).format('0.00a').toUpperCase() + '</center></p>';
                     }
                 },
                 title: {
@@ -2549,11 +2565,14 @@ var gogeo;
             //       return colors[i % colors.length];
             // };
             delete this.typeEstabOptions["chart"]["color"];
+            this.typeEstabOptions["chart"]["tooltipContent"] = this.options["chart"]["tooltipContent"];
             this.typeEstabOptions["title"]["text"] = "SHARE DE TIPOS DE ESTABELECIMENTOS";
         };
         TransactionsChartController.prototype.getReducedName = function (key) {
             var reducedNames = gogeo.Configuration.getReducedTypeEstabName();
-            return reducedNames[key];
+            var reducedName = reducedNames[key];
+            reducedName = reducedName[0].toUpperCase() + reducedName.slice(1);
+            return reducedName;
         };
         TransactionsChartController.$inject = [
             "$scope",

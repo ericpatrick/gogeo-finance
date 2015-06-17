@@ -29,30 +29,40 @@ module gogeo {
         },
         showValues: true,
         transitionDuration: 500,
+        tooltipContent: function (key, x, y, e, graph) {
+          if (key.indexOf("R$") != -1) {
+            y = "R$" + y;
+          } else {
+            key = "Quantidade";
+            // y = numeral(y).format('0.00a');
+          }
+          return '<div> ' + x + ' (' + key + ')' + '</div>' +
+                 '<p style="width: 140px"><center>' +  y + '</center></p>'
+        },
         xAxis: {
           axisLabel: "Tempo",
           tickFormat: function(d) {
-            return moment(new Date(d)).format("DD/MM/YYYY");
+            return moment(new Date(d)).format("DD/MM");
           },
           showMaxMin: true,
           rotateLabels: 50,
           axisLabelDistance: 10
         },
         yAxis1: {
-          axisLabel: "Valor (k)",
+          axisLabel: "Valor",
           tickFormat: function(d) {
-            return (d / 1000).toFixed(2);
+            return numeral(d).format('0.00a').toUpperCase();
           },
-          axisLabelDistance: 20,
+          axisLabelDistance: 25,
           width: 90,
           margin: {
             right: 70
           }
         },
         yAxis2: {
-          axisLabel: "Quantidade (k)",
+          axisLabel: "Quantidade",
           tickFormat: function(d) {
-            return (d / 1000).toFixed(2);
+            return numeral(d).format('0.00a').toUpperCase();
           },
           axisLabelDistance: 30
         }

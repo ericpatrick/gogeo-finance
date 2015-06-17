@@ -45,7 +45,7 @@ module gogeo {
     }
 
     formatRangeValue(value) {
-      return numeral(value).format('R$ 0,0[.]00');
+      return "R" + numeral(value).format('$ 0,0[.]00');
     };
 
     private loadParams(result: any) {

@@ -2302,7 +2302,7 @@ td.visible-print,th.visible-print{display:table-cell!important}
 .angucomplete-image-default{background-position:center;background-size:contain;height:34px;width:34px}
 .chartWrap{margin:0;padding:0;overflow:hidden}
 .nvtooltip.with-3d-shadow,.with-3d-shadow .nvtooltip{-moz-box-shadow:0 5px 10px rgba(0,0,0,.2);-webkit-box-shadow:0 5px 10px rgba(0,0,0,.2);box-shadow:0 5px 10px rgba(0,0,0,.2);-webkit-border-radius:6px;-moz-border-radius:6px;border-radius:6px}
-.nvtooltip{position:absolute;background-color:rgba(255,255,255,1);padding:1px;border:1px solid rgba(0,0,0,.2);z-index:10000;font-family:Arial;font-size:13px;text-align:left;white-space:nowrap;-webkit-user-select:none;-ms-user-select:none;user-select:none}
+.nvtooltip{position:absolute;background-color:rgba(255,255,255,1);padding:1px;border:1px solid rgba(0,0,0,.2);z-index:10000;text-align:left;white-space:nowrap;-webkit-user-select:none;-ms-user-select:none;user-select:none}
 .nvtooltip h3,.nvtooltip p{margin:0;text-align:center}
 .nvtooltip.with-transitions,.with-transitions .nvtooltip{transition:opacity 250ms linear;-moz-transition:opacity 250ms linear;-webkit-transition:opacity 250ms linear;transition-delay:250ms;-moz-transition-delay:250ms;-webkit-transition-delay:250ms}
 .nvtooltip.x-nvtooltip,.nvtooltip.y-nvtooltip{padding:8px}
@@ -2583,3 +2583,4 @@ slider>input{max-width:100%}
 .container-pie-chart{border-top:1px dashed #A1A1A1;margin-top:10px}
 .tick line{display:none}
 date-histogram-chart nvd3 svg{height:370px!important;position:relative;left:-45px}
+.nvtooltip{background:rgba(47,56,58,.9);border-radius:3px;font-family:TitilliumWeb;font-weight:400;font-size:16px;color:#FFF;line-height:15px}

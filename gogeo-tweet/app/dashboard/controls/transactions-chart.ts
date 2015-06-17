@@ -65,9 +65,12 @@ module gogeo {
         // var colors = [ "#4393C3", "#92C5DE", "#D1E5F0", "#FFFFBF", "#FDDBC7", "#F4A582", "#D6604D", "#B2182B", "#67001F" ];
         result.forEach((item) => {
           // console.log("********", item);
+          var key = item['key'];
+          key = key[0].toUpperCase() + key.slice(1);
+
           this.buckets.push(
             {
-              x: item['key'].toUpperCase(),
+              x: key,
               y: item['sum']
             }
           );
@@ -89,7 +92,7 @@ module gogeo {
           // console.log("********", item);
           this.typeEstabBuckets.push(
             {
-              x: item['key'],
+              x: item["key"],
               y: item['sum']
             }
           );
@@ -118,12 +121,11 @@ module gogeo {
           color: function (d, i) {
             var colors = [ "#FF7F0E", "#4393C3" ];
             return colors[i % colors.length];
+          },
+          tooltipContent: function (key, y, e, graph) {
+            return '<div> ' + key + '</div>' +
+                   '<p style="width: 140px"><center>R$' +  numeral(y).format('0.00a').toUpperCase() + '</center></p>'
           }
-          // tooltipContent: function (key, y, e, graph) {
-          //   console.log("-----------", e);
-          //   return '<h4 style="background-color: #F0F0F0; padding: 5px 0px 5px 10px; margin-top: 0px"><strong>' + key + '</strong></h4>' +
-          //          '<div style="width: 140px"><center>R$' +  y + '</center></div>'
-          // }
         },
         title: {
           enable: true,
@@ -153,13 +155,17 @@ module gogeo {
 
       delete this.typeEstabOptions["chart"]["color"]
 
+      this.typeEstabOptions["chart"]["tooltipContent"] = this.options["chart"]["tooltipContent"];
+
       this.typeEstabOptions["title"]["text"] = "SHARE DE TIPOS DE ESTABELECIMENTOS";
     }
 
     getReducedName(key: string) {
       var reducedNames = Configuration.getReducedTypeEstabName();
+      var reducedName = reducedNames[key]
+      reducedName = reducedName[0].toUpperCase() + reducedName.slice(1);
 
-      return reducedNames[key]
+      return reducedName
     }
   }
 
